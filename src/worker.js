@@ -1,14 +1,11 @@
-// loading env vars
-require('dotenv').config()
-
 const { App } = require("@octokit/app");
 const { handleBadDatabaseVerbs } = require("./handlers/handle_bad_verbs");
 
 // wrangler secret put APP_ID
-const appId = process.env.APP_ID;
+const appId = APP_ID;
 
 // wrangler secret put WEBHOOK_SECRET
-const secret = process.env.WEBHOOK_SECRET;
+const secret = WEBHOOK_SECRET;
 
 const APP_NAME = "cloudflare-workers-app[bot]";
 const BAD_VERBS = ["DELETE", "DROP", "ALTER"];
@@ -30,7 +27,7 @@ const PR_EVENTS = ["pull_request.opened", "pull_request.edit", "pull_request.syn
 //     cat xab | wrangler secret put PRIVATE_KEY_2
 //     cat xac | wrangler secret put PRIVATE_KEY_3
 //
-const privateKey = [process.env.PRIVATE_KEY_1, process.env.PRIVATE_KEY_2, process.env.PRIVATE_KEY_3].join("\n");
+const privateKey = [PRIVATE_KEY_1, PRIVATE_KEY_2, PRIVATE_KEY_3].join("\n");
 
 // instantiate app
 // https://github.com/octokit/app.js/#readme
