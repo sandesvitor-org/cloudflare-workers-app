@@ -7,7 +7,7 @@ const appId = APP_ID;
 // wrangler secret put WEBHOOK_SECRET
 const secret = WEBHOOK_SECRET;
 
-const APP_NAME = "cloudflare-workers-app[bot]";
+const APP_NAME = "cloudflare-worker[bot]";
 const BAD_VERBS = ["DELETE", "DROP", "ALTER"];
 const PR_EVENTS = ["pull_request.opened", "pull_request.edit", "pull_request.synchronize"]
 
