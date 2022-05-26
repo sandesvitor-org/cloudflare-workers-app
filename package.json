@@ -4,6 +4,7 @@
   "private": true,
   "description": "A Probot app",
   "author": "sandesvitor@gmail.com",
+  "main": "src/worker.js",
   "keywords": [
     "github",
     "cloudflare"
