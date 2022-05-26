@@ -22,8 +22,31 @@ const app = new App({
   },
 });
 
-app.webhooks.on(PR_EVENTS, async ({ octokit, payload }) => {
-  await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS)
+app.webhooks.on("pull_request.opened", async ({ octokit, payload }) => {
+  // await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS)
+  await octokit.request(
+    "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
+    {
+      owner: payload.repository.owner.login,
+      repo: payload.repository.name,
+      issue_number: payload.issue.number,
+      body:
+        "OPEN",
+    }
+  );
+});
+app.webhooks.on("pull_request.synchronize", async ({ octokit, payload }) => {
+  // await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS)
+  await octokit.request(
+    "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
+    {
+      owner: payload.repository.owner.login,
+      repo: payload.repository.name,
+      issue_number: payload.issue.number,
+      body:
+        "SYNC",
+    }
+  );
 });
 
 addEventListener("fetch", (event) => {
