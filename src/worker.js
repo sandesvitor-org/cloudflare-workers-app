@@ -10,23 +10,6 @@ const secret = WEBHOOK_SECRET;
 const APP_NAME = "cloudflare-worker[bot]";
 const BAD_VERBS = ["DELETE", "DROP", "ALTER"];
 const PR_EVENTS = ["pull_request.opened", "pull_request.edit", "pull_request.synchronize"]
-
-// The private-key.pem file from GitHub needs to be transformed from the
-// PKCS#1 format to PKCS#8, as the crypto APIs do not support PKCS#1:
-//
-//     openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in private-key.pem -out private-key-pkcs8.pem
-//
-// The private key is too large, so we split it up across 3 keys.
-// You can split up the *.pem file into 3 equal parts with
-//
-//     split -l 10 private-key-pkcs8.pem
-//
-// Then set the priveat keys
-//
-//     cat xaa | wrangler secret put PRIVATE_KEY_1
-//     cat xab | wrangler secret put PRIVATE_KEY_2
-//     cat xac | wrangler secret put PRIVATE_KEY_3
-//
 const privateKey = [PRIVATE_KEY_1, PRIVATE_KEY_2, PRIVATE_KEY_3].join("\n");
 
 // instantiate app
@@ -58,8 +41,7 @@ async function handleRequest(request) {
     return new Response(
       `<h1>Cloudflare Worker do Sandes</h1>
 <p>Installation count: ${data.installations_count}</p>
-    
-<p><a href="https://github.com/sandesvitor-org/cloudflare-workers-app">Install</a> | <a href="https://github.com/sandesvitor-org/cloudflare-workers-app/#readme">source code</a></p>`,
+<p><a href="https://github.com/apps/cloudflare-worker">Install</a> | <a href="https://github.com/sandesvitor-org/cloudflare-workers-app/#readme">source code</a></p>`,
       {
         headers: { "content-type": "text/html" },
       }
