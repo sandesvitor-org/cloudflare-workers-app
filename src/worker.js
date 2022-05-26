@@ -42,3 +42,52 @@ const app = new App({
 app.webhooks.on(PR_EVENTS, async ({ octokit, payload }) => {
   await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS)
 });
+
+addEventListener("fetch", (event) => {
+  event.respondWith(handleRequest(event.request));
+});
+
+/**
+ * Respond with hello worker text
+ * @param {Request} request
+ */
+async function handleRequest(request) {
+  if (request.method === "GET") {
+    const { data } = await app.octokit.request("GET /app");
+
+    return new Response(
+      `<h1>Cloudflare Worker Example GitHub app</h1>
+<p>Installation count: ${data.installations_count}</p>
+    
+<p><a href="https://github.com/apps/cloudflare-worker-example">Install</a> | <a href="https://github.com/gr2m/cloudflare-worker-github-app-example/#readme">source code</a></p>`,
+      {
+        headers: { "content-type": "text/html" },
+      }
+    );
+  }
+
+  const id = request.headers.get("x-github-delivery");
+  const name = request.headers.get("x-github-event");
+  const payload = await request.json();
+
+  try {
+    // TODO: implement signature verification
+    // https://github.com/gr2m/cloudflare-worker-github-app-example/issues/1
+    await app.webhooks.receive({
+      id,
+      name,
+      payload,
+    });
+
+    return new Response(`{ "ok": true }`, {
+      headers: { "content-type": "application/json" },
+    });
+  } catch (error) {
+    app.log.error(error);
+
+    return new Response(`{ "error": "${error.message}" }`, {
+      status: 500,
+      headers: { "content-type": "application/json" },
+    });
+  }
+}
