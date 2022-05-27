@@ -1,20 +1,15 @@
 const { App } = require("@octokit/app");
-// const { handleBadDatabaseVerbs } = require("./handlers/handle_bad_verbs");
+const { handleBadDatabaseVerbs } = require("./handlers/handle_bad_verbs");
 
-// wrangler secret put APP_ID
 const appId = APP_ID;
-
-// wrangler secret put WEBHOOK_SECRET
 const secret = WEBHOOK_SECRET;
-
-const APP_NAME = "cloudflare-worker[bot]";
-const BAD_VERBS = ["DELETE", "DROP", "ALTER"];
-// const PR_EVENTS = ["pull_request.opened", "pull_request.synchronize"]
-const PR_EVENTS = ["issues.opened", "issues.closed"]
 const privateKey = [PRIVATE_KEY_1, PRIVATE_KEY_2, PRIVATE_KEY_3].join("\n");
 
-// instantiate app
-// https://github.com/octokit/app.js/#readme
+const APP_NAME = "cloudflare-worker[bot]";
+const TEAM_REVIEWERS = ["dba-team"];
+const BAD_VERBS = ["DELETE", "DROP", "ALTER"];
+const PR_EVENTS = ["pull_request.opened", "pull_request.synchronize"]
+
 const app = new App({
   appId,
   privateKey,
@@ -25,17 +20,7 @@ const app = new App({
 
 app.webhooks.on(PR_EVENTS, async ({ octokit, payload }) => {
   console.log(`[LOG] Inside webhook events: ${PR_EVENTS}`)
-  // await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS)
-  await octokit.request(
-    "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
-    {
-      owner: payload.repository.owner.login,
-      repo: payload.repository.name,
-      issue_number: payload.issue.number,
-      body:
-        "Hello there from [Cloudflare Workers](https://github.com/gr2m/cloudflare-worker-github-app-example/#readme)",
-    }
-  );
+  await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS, TEAM_REVIEWERS)
 });
 
 addEventListener("fetch", (event) => {

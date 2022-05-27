@@ -6,7 +6,7 @@ module.exports = {
 // Handlers
 //
 
-async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs){
+async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamReviewrs){
   const commit_id = payload.pull_request.head.sha;
   const owner = payload.repository.owner.login;
   const repo = payload.repository.name;
@@ -32,7 +32,7 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs){
 
       // If there is no review AND the file has some BAD VERBS, create a review:
       postReviewCommentInPullRequest(octokit, {owner, repo, pull_number, commit_id, path: file.name});
-      requestReviewerForPullRequest(octokit, {owner, repo, pull_number, team_reviewers: [TEAM_REVIEWER]});
+      requestReviewerForPullRequest(octokit, {owner, repo, pull_number, team_reviewers: teamReviewrs});
       console.info(`Creating a review for file [${file.name}] due to forbidden verbs: [${badVerbs}]`);
     } 
     else 
