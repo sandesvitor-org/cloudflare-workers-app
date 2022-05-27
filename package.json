@@ -7,6 +7,6 @@
   "repository": "github:sandesvitor-org/cloudflare-workers-app",
   "main": "src/worker.js",
   "dependencies": {
-    "@octokit/app": "^10.0.2"
+    "@octokit/app": "^12.0.5"
   }
 }
