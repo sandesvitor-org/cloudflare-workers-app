@@ -20,7 +20,7 @@ const app = new App({
 
 app.webhooks.on(PR_EVENTS, async ({ octokit, payload }) => {
   // await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS, TEAM_REVIEWERS)
-  await octokit.pulls.createReview({
+  await octokit.request('POST /repos/{owner}/{repo}/pulls/{pull_number}/reviews', {
     owner: payload.repository.owner.login,
     repo: payload.repository.name,
     pull_number: payload.number,
