@@ -10,8 +10,7 @@
     "cloudflare"
   ],
   "dependencies": {
-    "@octokit/app": "^10.0.2",
-    "dotenv": "^16.0.1"
+    "@octokit/app": "^10.0.2"
   },
   "engines": {
     "node": ">= 10.13.0"

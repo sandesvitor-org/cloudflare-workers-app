@@ -24,6 +24,7 @@ const app = new App({
 
 app.webhooks.on("issues.opened", async ({ octokit, payload }) => {
   // await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS)
+  console.log("[LOG] Inside webhook event (issues.opened)")
   await octokit.request(
     "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
     {
@@ -31,12 +32,13 @@ app.webhooks.on("issues.opened", async ({ octokit, payload }) => {
       repo: payload.repository.name,
       issue_number: payload.issue.number,
       body:
-        "OPEN",
+        "Hello there from [Cloudflare Workers](https://github.com/gr2m/cloudflare-worker-github-app-example/#readme)",
     }
   );
 });
 
 addEventListener("fetch", (event) => {
+  console.log("[LOG] Inside event listener GET /")
   event.respondWith(handleRequest(event.request));
 });
 
