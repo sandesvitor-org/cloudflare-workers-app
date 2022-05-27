@@ -9,7 +9,8 @@ const secret = WEBHOOK_SECRET;
 
 const APP_NAME = "cloudflare-worker[bot]";
 const BAD_VERBS = ["DELETE", "DROP", "ALTER"];
-const PR_EVENTS = ["pull_request.opened", "pull_request.synchronize"]
+// const PR_EVENTS = ["pull_request.opened", "pull_request.synchronize"]
+const PR_EVENTS = ["issues.opened", "issues.closed"]
 const privateKey = [PRIVATE_KEY_1, PRIVATE_KEY_2, PRIVATE_KEY_3].join("\n");
 
 // instantiate app
@@ -22,7 +23,7 @@ const app = new App({
   },
 });
 
-app.webhooks.on("issues.opened", async ({ octokit, payload }) => {
+app.webhooks.on(PR_EVENTS, async ({ octokit, payload }) => {
   console.log(`[LOG] Inside webhook events: ${PR_EVENTS}`)
   // await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS)
   await octokit.request(
