@@ -38,7 +38,7 @@ app.webhooks.on("issues.opened", async ({ octokit, payload }) => {
 });
 
 addEventListener("fetch", (event) => {
-  console.log(`[LOG] Inside event listener ${request.method} /`)
+  console.log(`[LOG] Inside event listener ${event.request.method} /`)
   event.respondWith(handleRequest(event.request));
 });
 
