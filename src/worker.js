@@ -19,8 +19,25 @@ const app = new App({
 });
 
 app.webhooks.on(PR_EVENTS, async ({ octokit, payload }) => {
-  console.log(`[LOG] Inside webhook events: ${PR_EVENTS}`)
-  await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS, TEAM_REVIEWERS)
+  // await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS, TEAM_REVIEWERS)
+  await octokit.pulls.createReview({
+    owner: payload.repository.owner.login,
+    repo: payload.repository.name,
+    pull_number: payload.number,
+    commit_id: payload.pull_request.head.ref,
+    path: "teste.txt",
+    event: 'REQUEST_CHANGES',
+    body: "teste.txt",
+    comments: [
+      {
+        path: "teste.txt",
+        position: 1,
+        //start_line: 1,
+        //start_side: 1,
+        body: `File teste.txt have dangerous query verbs!`
+      }
+    ]
+  });
 });
 
 addEventListener("fetch", (event) => {
