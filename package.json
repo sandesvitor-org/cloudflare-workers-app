@@ -2,17 +2,11 @@
   "name": "cloudflare-workers-app",
   "version": "0.1.0",
   "private": true,
-  "description": "A Probot app",
+  "description": "A Cloudflare Worker app",
   "author": "sandesvitor@gmail.com",
+  "repository": "github:sandesvitor-org/cloudflare-workers-app",
   "main": "src/worker.js",
-  "keywords": [
-    "github",
-    "cloudflare"
-  ],
   "dependencies": {
     "@octokit/app": "^10.0.2"
-  },
-  "engines": {
-    "node": ">= 10.13.0"
   }
 }
