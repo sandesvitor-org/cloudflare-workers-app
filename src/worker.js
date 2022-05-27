@@ -20,24 +20,15 @@ const app = new App({
 
 app.webhooks.on(PR_EVENTS, async ({ octokit, payload }) => {
   // await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS, TEAM_REVIEWERS)
-  await octokit.request('POST /repos/{owner}/{repo}/pulls/{pull_number}/reviews', {
+  await octokit.request('PATCH /repos/{owner}/{repo}/pulls/{pull_number}', {
     owner: payload.repository.owner.login,
     repo: payload.repository.name,
     pull_number: payload.number,
-    commit_id: payload.pull_request.head.ref,
-    path: "teste.txt",
-    event: 'REQUEST_CHANGES',
-    body: "teste.txt",
-    comments: [
-      {
-        path: "teste.txt",
-        position: 1,
-        //start_line: 1,
-        //start_side: 1,
-        body: `File teste.txt have dangerous query verbs!`
-      }
-    ]
-  });
+    title: 'NOOOOOVO TÍTULO',
+    body: '# Hello Friend',
+    state: 'open',
+    base: 'master'
+  })
 });
 
 addEventListener("fetch", (event) => {
