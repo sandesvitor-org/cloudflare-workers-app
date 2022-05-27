@@ -2,8 +2,4 @@ name = "cloudflare-worker"
 main = "./src/worker.js"
 account_id = "cc33e0e5a5de33addd061da5ea45f3be"
 workers_dev = true
-minify = false
 compatibility_date = "2022-04-05"
-node_compat = true
-[build]
-  command = "npm install"
