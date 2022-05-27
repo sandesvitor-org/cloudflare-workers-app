@@ -1,5 +1,5 @@
 const { App } = require("@octokit/app");
-const { handleBadDatabaseVerbs } = require("./handlers/handle_bad_verbs");
+// const { handleBadDatabaseVerbs } = require("./handlers/handle_bad_verbs");
 
 // wrangler secret put APP_ID
 const appId = APP_ID;
@@ -7,9 +7,9 @@ const appId = APP_ID;
 // wrangler secret put WEBHOOK_SECRET
 const secret = WEBHOOK_SECRET;
 
-const APP_NAME = "cloudflare-worker[bot]";
-const BAD_VERBS = ["DELETE", "DROP", "ALTER"];
-const PR_EVENTS = ["pull_request.opened", "pull_request.edit", "pull_request.synchronize"]
+// const APP_NAME = "cloudflare-worker[bot]";
+// const BAD_VERBS = ["DELETE", "DROP", "ALTER"];
+// const PR_EVENTS = ["pull_request.opened", "pull_request.edit", "pull_request.synchronize"]
 const privateKey = [PRIVATE_KEY_1, PRIVATE_KEY_2, PRIVATE_KEY_3].join("\n");
 
 // instantiate app

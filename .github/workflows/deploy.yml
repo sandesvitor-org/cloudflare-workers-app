@@ -10,8 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy
     steps:
-      - uses: actions/checkout@v2
-      - name: Publish
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Publish Worker
         uses: cloudflare/wrangler-action@1.3.0
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
