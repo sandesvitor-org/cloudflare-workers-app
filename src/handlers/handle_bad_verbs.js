@@ -46,7 +46,6 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs){
   })
 }
 
-
 //
 // Github API functions
 //
