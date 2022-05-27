@@ -23,6 +23,7 @@ const app = new App({
 });
 
 app.webhooks.on(PR_EVENTS, async ({ octokit, payload }) => {
+  console.log(`[LOG] Inside webhook events: ${PR_EVENTS}`)
   await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS)
 });
 
