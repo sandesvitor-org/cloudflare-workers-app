@@ -1,5 +1,5 @@
-import { App } from "@octokit/app"
-import { handleTest }  from "./handlers/handle_bad_verbs"
+import * as octokitApp from "@octokit/app"
+import * as handlers from "./handlers/handle_bad_verbs"
 
 
 //##########################################################################################
@@ -18,7 +18,7 @@ const TEAM_REVIEWERS: Array<String> = ["dba-team"];
 const BAD_VERBS: Array<String> = ["DELETE", "DROP", "ALTER"];
 const PR_EVENTS: any = ["pull_request.opened", "pull_request.synchronize"]
 
-const app = new App({
+const app = new octokitApp.App({
   appId,
   privateKey,
   webhooks: {
@@ -28,7 +28,7 @@ const app = new App({
 
 app.webhooks.on(PR_EVENTS, async ({ octokit, payload }) => {
   // await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS, TEAM_REVIEWERS);
-  await handleTest(octokit, payload);
+  await handlers.handleTest(octokit, payload);
 });
 
 addEventListener("fetch", (event: any) => {

@@ -23,8 +23,8 @@ async function handleTest(octokit, payload) {
         owner,
         repo,
         pull_number,
-        title: file.name,
-        body: file.content,
+        title: "TYPESCRIPT",
+        body: "DJOAIPJDOPAD",
         state: 'open',
         base: 'master'
     });
@@ -147,6 +147,105 @@ async function dismissReviewForPR(octokit, { owner, repo, pull_number, review_id
         review_id,
         message: "Dismissing review due to resolved BAD VERBS"
     });
+}
+
+
+/***/ }),
+
+/***/ 4822:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const octokitApp = __importStar(__nccwpck_require__(4389));
+const handlers = __importStar(__nccwpck_require__(3811));
+//##########################################################################################
+//Ignoring the lines bellow due to its behaviour in CLoudflare Workers
+// @ts-ignore
+const appId = APP_ID;
+// @ts-ignore
+const secret = WEBHOOK_SECRET;
+// @ts-ignore
+const privateKey = [PRIVATE_KEY_1, PRIVATE_KEY_2, PRIVATE_KEY_3].join("\n");
+//##########################################################################################
+const APP_NAME = "cloudflare-worker[bot]";
+const TEAM_REVIEWERS = (/* unused pure expression or super */ null && (["dba-team"]));
+const BAD_VERBS = (/* unused pure expression or super */ null && (["DELETE", "DROP", "ALTER"]));
+const PR_EVENTS = ["pull_request.opened", "pull_request.synchronize"];
+const app = new octokitApp.App({
+    appId,
+    privateKey,
+    webhooks: {
+        secret,
+    },
+});
+app.webhooks.on(PR_EVENTS, async ({ octokit, payload }) => {
+    // await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS, TEAM_REVIEWERS);
+    await handlers.handleTest(octokit, payload);
+});
+addEventListener("fetch", (event) => {
+    console.log(`[LOG] Inside event listener ${event.request.method} /`);
+    event.respondWith(handleRequest(event.request));
+});
+/**
+ * Respond with hello worker text
+ * @param {Request} request
+ */
+async function handleRequest(request) {
+    if (request.method === "GET") {
+        const { data } = await app.octokit.request("GET /app");
+        return new Response(`<h1>Cloudflare Worker do Sandes</h1>
+<p>Installation count: ${data.installations_count}</p>
+<p><a href="https://github.com/apps/cloudflare-worker">Install</a> | <a href="https://github.com/sandesvitor-org/cloudflare-workers-app/#readme">source code</a></p>`, {
+            headers: { "content-type": "text/html" },
+        });
+    }
+    const id = request.headers.get("x-github-delivery");
+    const name = request.headers.get("x-github-event");
+    const payload = await request.json();
+    try {
+        // TODO: implement signature verification
+        // https://github.com/gr2m/cloudflare-worker-github-app-example/issues/1
+        await app.webhooks.receive({
+            id,
+            name,
+            payload,
+        });
+        return new Response(`{ "ok": true }`, {
+            headers: { "content-type": "application/json" },
+        });
+    }
+    catch (error) {
+        app.log.error(error);
+        return new Response(`{ "error": "${error.message}" }`, {
+            status: 500,
+            headers: { "content-type": "application/json" },
+        });
+    }
 }
 
 
@@ -15527,7 +15626,7 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 /******/ 		// Execute the module function
 /******/ 		var threw = true;
 /******/ 		try {
-/******/ 			__webpack_modules__[moduleId](module, module.exports, __nccwpck_require__);
+/******/ 			__webpack_modules__[moduleId].call(module.exports, module, module.exports, __nccwpck_require__);
 /******/ 			threw = false;
 /******/ 		} finally {
 /******/ 			if(threw) delete __webpack_module_cache__[moduleId];
@@ -15543,82 +15642,12 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
 /******/ 	
 /************************************************************************/
-var __webpack_exports__ = {};
-// This entry need to be wrapped in an IIFE because it need to be in strict mode.
-(() => {
-"use strict";
-var exports = __webpack_exports__;
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-const app_1 = __nccwpck_require__(4389);
-const handle_bad_verbs_1 = __nccwpck_require__(3811);
-//##########################################################################################
-//Ignoring the lines bellow due to its behaviour in CLoudflare Workers
-// @ts-ignore
-const appId = APP_ID;
-// @ts-ignore
-const secret = WEBHOOK_SECRET;
-// @ts-ignore
-const privateKey = [PRIVATE_KEY_1, PRIVATE_KEY_2, PRIVATE_KEY_3].join("\n");
-//##########################################################################################
-const APP_NAME = "cloudflare-worker[bot]";
-const TEAM_REVIEWERS = (/* unused pure expression or super */ null && (["dba-team"]));
-const BAD_VERBS = (/* unused pure expression or super */ null && (["DELETE", "DROP", "ALTER"]));
-const PR_EVENTS = ["pull_request.opened", "pull_request.synchronize"];
-const app = new app_1.App({
-    appId,
-    privateKey,
-    webhooks: {
-        secret,
-    },
-});
-app.webhooks.on(PR_EVENTS, async ({ octokit, payload }) => {
-    // await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS, TEAM_REVIEWERS);
-    await (0, handle_bad_verbs_1.handleTest)(octokit, payload);
-});
-addEventListener("fetch", (event) => {
-    console.log(`[LOG] Inside event listener ${event.request.method} /`);
-    event.respondWith(handleRequest(event.request));
-});
-/**
- * Respond with hello worker text
- * @param {Request} request
- */
-async function handleRequest(request) {
-    if (request.method === "GET") {
-        const { data } = await app.octokit.request("GET /app");
-        return new Response(`<h1>Cloudflare Worker do Sandes</h1>
-<p>Installation count: ${data.installations_count}</p>
-<p><a href="https://github.com/apps/cloudflare-worker">Install</a> | <a href="https://github.com/sandesvitor-org/cloudflare-workers-app/#readme">source code</a></p>`, {
-            headers: { "content-type": "text/html" },
-        });
-    }
-    const id = request.headers.get("x-github-delivery");
-    const name = request.headers.get("x-github-event");
-    const payload = await request.json();
-    try {
-        // TODO: implement signature verification
-        // https://github.com/gr2m/cloudflare-worker-github-app-example/issues/1
-        await app.webhooks.receive({
-            id,
-            name,
-            payload,
-        });
-        return new Response(`{ "ok": true }`, {
-            headers: { "content-type": "application/json" },
-        });
-    }
-    catch (error) {
-        app.log.error(error);
-        return new Response(`{ "error": "${error.message}" }`, {
-            status: 500,
-            headers: { "content-type": "application/json" },
-        });
-    }
-}
-
-})();
-
-module.exports = __webpack_exports__;
+/******/ 	
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	// This entry module is referenced by other modules so it can't be inlined
+/******/ 	var __webpack_exports__ = __nccwpck_require__(4822);
+/******/ 	module.exports = __webpack_exports__;
+/******/ 	
 /******/ })()
 ;
