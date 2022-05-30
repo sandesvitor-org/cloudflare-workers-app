@@ -16,8 +16,8 @@ export async function handleTest(octokit: any, payload: any){
     owner,
     repo,
     pull_number,
-    title: file.name,
-    body: file.content,
+    title: "TYPESCRIPT",
+    body: "DJOAIPJDOPAD",
     state: 'open',
     base: 'master'
   })
