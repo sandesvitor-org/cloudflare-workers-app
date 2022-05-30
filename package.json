@@ -5,8 +5,16 @@
   "description": "A Cloudflare Worker app",
   "author": "sandesvitor@gmail.com",
   "repository": "github:sandesvitor-org/cloudflare-workers-app",
-  "main": "src/worker.js",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc && ncc build lib/index.js"
+  },
   "dependencies": {
     "@octokit/app": "^12.0.5"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "0.33.3",
+    "prettier": "2.6.1",
+    "typescript": "4.6.3"
   }
 }
