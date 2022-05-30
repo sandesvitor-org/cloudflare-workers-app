@@ -128,22 +128,22 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
     {
       // Checking if we already have a review in PR linked to the file name (also, if said review is marked as 'DISMISSED', return check):
       if (openReviewsForFile.length > 0){
-        console.info(`Ignoring file [${file.name}] because a review is already set for it`)
+        console.log(`Ignoring file [${file.name}] because a review is already set for it`)
         return
       } 
 
       // If there is no review AND the file has some BAD VERBS, create a review:
       await postReviewCommentInPullRequest(octokit, {owner, repo, pull_number, commit_id, path: file.name});
       await requestReviewerForPullRequest(octokit, {owner, repo, pull_number, team_reviewers: teamReviewrs});
-      console.info(`Creating a review for file [${file.name}] due to forbidden verbs: [${badVerbs}]`);
+      console.log(`Creating a review for file [${file.name}] due to forbidden verbs: [${badVerbs}]`);
     } 
     else 
     {
       openReviewsForFile.forEach(async (review) => {
-          console.info(`Dismissing review [${review.review_id}] for file [${file.name}]`);
+          console.log(`Dismissing review [${review.review_id}] for file [${file.name}]`);
           await dismissReviewForPR(octokit, {owner, repo, pull_number, review_id: review.review_id});
         });
-      console.info(`Ignoring changed file [${file.name}], nothing wrong with it =)`);
+      console.log(`Ignoring changed file [${file.name}], nothing wrong with it =)`);
     }
   })
 }
