@@ -100,7 +100,7 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
   const botPullRequestReviewsIDsArray = await getPullRequestReviews(octokit, {owner, repo, pull_number, app_name: appName});
   const filesContentArray = await getChangedFilesContentForPullRequest(octokit, {owner, repo, pull_number, ref});
   
-  await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # FORA DO LOOP - V2", body: filesContentArray, base})
+  // await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # FORA DO LOOP - V2", body: filesContentArray, base})
   
   filesContentArray.forEach(async (file) => {
     const openReviewsForFile = botPullRequestReviewsIDsArray.filter(review => review.file_path === file.name && review.state !== 'DISMISSED')
