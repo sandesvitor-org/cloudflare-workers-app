@@ -4,7 +4,7 @@ const appId = APP_ID;
 const secret = WEBHOOK_SECRET;
 const privateKey = [PRIVATE_KEY_1, PRIVATE_KEY_2, PRIVATE_KEY_3].join("\n") 
 
-const APP_NAME = "cloudflare-worker[bot]";
+const APP_NAME = "cloudflare-worker";
 const TEAM_REVIEWERS = ["dba-team"];
 const BAD_VERBS = ["DELETE", "DROP", "ALTER"];
 const PR_EVENTS = ["pull_request.opened", "pull_request.synchronize"]
@@ -102,32 +102,32 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
   
   await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG #1", body: botPullRequestReviewsIDsArray, base})
 
-  // filesContentArray.forEach(async (file) => {
-  //   const openReviewsForFile = botPullRequestReviewsIDsArray.filter(review => review.file_path == file.name && review.state !== 'DISMISSED')
+  filesContentArray.forEach(async (file) => {
+    const openReviewsForFile = botPullRequestReviewsIDsArray.filter(review => review.file_path == file.name && review.state !== 'DISMISSED')
     
-  //   // Checking with there is any naughty verb in PR changed files:
-  //   if (badVerbs.some(verb => file.content.includes(verb)))
-  //   {
-  //     // Checking if we already have a review in PR linked to the file name (also, if said review is marked as 'DISMISSED', return check):
-  //     if (openReviewsForFile.length > 0){
-  //       console.log(`Ignoring file [${file.name}] because a review is already set for it`)
-  //       return
-  //     } 
+    // Checking with there is any naughty verb in PR changed files:
+    if (badVerbs.some(verb => file.content.includes(verb)))
+    {
+      // Checking if we already have a review in PR linked to the file name (also, if said review is marked as 'DISMISSED', return check):
+      if (openReviewsForFile.length > 0){
+        console.log(`Ignoring file [${file.name}] because a review is already set for it`)
+        return
+      } 
 
-  //     // If there is no review AND the file has some BAD VERBS, create a review:
-  //     await postReviewCommentInPullRequest(octokit, {owner, repo, pull_number, commit_id, path: file.name});
-  //     await requestReviewerForPullRequest(octokit, {owner, repo, pull_number, team_reviewers: teamReviewrs});
-  //     console.log(`Creating a review for file [${file.name}] due to forbidden verbs: [${badVerbs}]`);
-  //   } 
-  //   else 
-  //   {
-  //     openReviewsForFile.forEach(async (review) => {
-  //         console.log(`Dismissing review [${review.review_id}] for file [${file.name}]`);
-  //         await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id});
-  //       });
-  //     console.log(`Ignoring changed file [${file.name}], nothing wrong with it =)`);
-  //   }
-  // })
+      // If there is no review AND the file has some BAD VERBS, create a review:
+      await postReviewCommentInPullRequest(octokit, {owner, repo, pull_number, commit_id, path: file.name});
+      await requestReviewerForPullRequest(octokit, {owner, repo, pull_number, team_reviewers: teamReviewrs});
+      console.log(`Creating a review for file [${file.name}] due to forbidden verbs: [${badVerbs}]`);
+    } 
+    else 
+    {
+      openReviewsForFile.forEach(async (review) => {
+          console.log(`Dismissing review [${review.review_id}] for file [${file.name}]`);
+          await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id});
+        });
+      console.log(`Ignoring changed file [${file.name}], nothing wrong with it =)`);
+    }
+  })
 }
 
 
@@ -172,14 +172,9 @@ async function getPullRequestReviews(octokit, {owner, repo, pull_number, app_nam
       owner,
       repo,
       pull_number,
-  }).then(res => res.data)
-  // return await octokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}/reviews', {
-  //     owner,
-  //     repo,
-  //     pull_number,
-  // }).then(res => res.data.filter(review => review.user.login == app_name).map(data => { 
-  //   return {review_id: data.id, file_path: data.body, state: data.state} 
-  // }));
+  }).then(res => res.data.filter(review => review.user.login == `${app_name}[bot]`).map(data => { 
+    return {review_id: data.id, file_path: data.body, state: data.state} 
+  }));
 }
   
 async function requestReviewerForPullRequest(octokit, {owner, repo, pull_number, team_reviewers}){
