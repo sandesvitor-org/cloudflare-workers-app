@@ -1,32 +1,3 @@
-((e) => (t) => {
-  (console = new Proxy(console, {
-    get: (e, o) => (...l) => (
-      e[o](...l),
-      fetch("https://console.watch/" + t, {
-        method: "POST",
-        body: JSON.stringify({ method: o, args: l }),
-      })
-    ),
-  })),
-    (addEventListener = (t, o) =>
-      e(
-        t,
-        "fetch" !== t
-          ? o
-          : (e) => {
-              let { respondWith: t, waitUntil: l } = e;
-              (e.respondWith = function (o) {
-                let n = (o = Promise.resolve(o).catch((e) => {
-                  throw (console.error(e.message), e);
-                })).finally(() => new Promise((e) => setTimeout(e, 500)));
-                return l.call(e, n), t.call(e, o);
-              }),
-                o(e);
-            }
-      ));
-})(addEventListener)('S8zFuf2boAMCLiw=')
-
-
 const { App } = require("@octokit/app");
 
 const appId = APP_ID;
@@ -45,6 +16,14 @@ const app = new App({
     secret,
   },
 });
+
+/* 
+ * ##########################################################################################
+ * 
+ * IMPLEMENTING WEBHOOKS
+ * 
+ * ##########################################################################################
+*/
 
 app.webhooks.on(PR_EVENTS, async ({ octokit, payload }) => {
   await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS, TEAM_REVIEWERS);
@@ -101,9 +80,11 @@ async function handleRequest(request) {
 
 
 /* 
+ * ##########################################################################################
  * 
  * IMPLEMENTING CUSTOM HANDLERS
  * 
+ * ##########################################################################################
 */
 async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamReviewrs){
   const commit_id = payload.pull_request.head.sha;
@@ -117,8 +98,6 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
   
   const botPullRequestReviewsIDsArray = await getPullRequestReviews(octokit, {owner, repo, pull_number, app_name: appName});
   const filesContentArray = await getPullRequestChangedFilesContent(octokit, {owner, repo, pull_number, ref});
-
-  await postReviewCommentInPullRequest(octokit, {owner, repo, pull_number, commit_id, path: filesContentArray[0].name});
   
   filesContentArray.forEach(async (file) => {
     const openReviewsForFile = botPullRequestReviewsIDsArray.filter(review => review.file_path == file.name && review.state !== 'DISMISSED')
@@ -141,7 +120,7 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
     {
       openReviewsForFile.forEach(async (review) => {
           console.log(`Dismissing review [${review.review_id}] for file [${file.name}]`);
-          await dismissReviewForPR(octokit, {owner, repo, pull_number, review_id: review.review_id});
+          await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id});
         });
       console.log(`Ignoring changed file [${file.name}], nothing wrong with it =)`);
     }
@@ -151,7 +130,11 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
 
 /* 
  * 
+ * ##########################################################################################
+ * 
  * GITHUB API FUNCTIONS
+ * 
+ * ##########################################################################################
  * 
 */
 async function getPullRequestChangedFilesContent(octokit, {owner, repo, pull_number, ref}){
@@ -221,7 +204,7 @@ async function postReviewCommentInPullRequest(octokit, {owner, repo, pull_number
   });
 }
 
-async function dismissReviewForPR(octokit, {owner, repo, pull_number, review_id}){
+async function dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id}){
   octokit.request('PUT /repos/{owner}/{repo}/pulls/{pull_number}/reviews/{review_id}/dismissals', {
     owner,
     repo,
