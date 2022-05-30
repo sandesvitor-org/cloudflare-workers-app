@@ -1,4 +1,3 @@
-require('dotenv').config()
 const { App } = require("@octokit/app");
 
 const appId = APP_ID;
