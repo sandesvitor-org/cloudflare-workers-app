@@ -100,10 +100,10 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
   const botPullRequestReviewsIDsArray = await getPullRequestReviews(octokit, {owner, repo, pull_number, app_name: appName});
   const filesContentArray = await getPullRequestChangedFilesContent(octokit, {owner, repo, pull_number, ref});
   
-  await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG #1", body: botPullRequestReviewsIDsArray, base})
+  await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG #2", body: botPullRequestReviewsIDsArray, base})
 
   filesContentArray.forEach(async (file) => {
-    const openReviewsForFile = botPullRequestReviewsIDsArray.filter(review => review.file_path == file.name && review.state !== 'DISMISSED')
+    const openReviewsForFile = botPullRequestReviewsIDsArray.filter(review => review.file_path === file.name && review.state !== 'DISMISSED')
     
     // Checking with there is any naughty verb in PR changed files:
     if (badVerbs.some(verb => file.content.includes(verb)))
