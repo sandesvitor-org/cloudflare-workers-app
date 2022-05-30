@@ -177,7 +177,7 @@ async function getPullRequestReviews(octokit, {owner, repo, pull_number, app_nam
   return await octokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}/reviews', {
       owner,
       repo,
-      pull_number,
+      pull_number
   })
     .then(res => res.data)
     // .then(res => res.data.filter(review => review.user.login == `${app_name}[bot]`).map(data => { 
