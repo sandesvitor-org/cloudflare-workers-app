@@ -106,17 +106,17 @@ async function handleTest(octokit, payload){
   const pull_number = payload.number;
   const ref = payload.pull_request.head.ref;
 
-  const filesContentArray = await getPullRequestChangedFilesContent(octokit, {owner, repo, pull_number, ref});
-
-  filesContentArray.forEach(async (file) => {
-    await octokit.request('PATCH /repos/{owner}/{repo}/pulls/{pull_number}', {
-      owner,
-      repo,
-      pull_number,
-      title: file.name,
-      body: file.content,
-      state: 'open',
-      base: 'master'
-    })
+  // const filesContentArray = await getPullRequestChangedFilesContent(octokit, {owner, repo, pull_number, ref});
+  await octokit.request('PATCH /repos/{owner}/{repo}/pulls/{pull_number}', {
+    owner,
+    repo,
+    pull_number,
+    title: "# NOVO 2 ",
+    body: ref,
+    state: 'open',
+    base: 'master'
   })
+
+  // filesContentArray.forEach(async (file) => {
+  // })
 }
