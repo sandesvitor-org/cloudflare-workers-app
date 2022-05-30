@@ -145,25 +145,39 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
 */
 async function getChangedFilesContentForPullRequest(octokit, {owner, repo, pull_number, ref}){
   // let filesContent = []
-  const filesListBase64 = await octokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}/files', {
+  return await octokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}/files', {
     owner,
     repo,
     pull_number,
     per_page: 100
-  }).then(filesObject => {filesObject.data})
-  
-  return filesListBase64.filter(async (file) => {
-    let content = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
-      owner: owner,
-      repo: repo,
-      path: file.filename,
-      ref: ref
-    })
-      .then(response => Buffer.from(response.data.content, 'base64').toString())
-      .then(content => {
-        return {name: file.filename, content: content}
-      })
   })
+    .then(filesObject => filesObject.data)
+    .then(filesListBase64 => {
+      filesListBase64.filter(async (file) => {
+        await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
+          owner: owner,
+          repo: repo,
+          path: file.filename,
+          ref: ref
+        })
+          .then(response => Buffer.from(response.data.content, 'base64').toString())
+          .then(content => {
+            return {name: file.filename, content: content}
+          })
+      })
+    })
+  // return filesListBase64.filter(async (file) => {
+  //   await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
+  //     owner: owner,
+  //     repo: repo,
+  //     path: file.filename,
+  //     ref: ref
+  //   })
+  //     .then(response => Buffer.from(response.data.content, 'base64').toString())
+  //     .then(content => {
+  //       return {name: file.filename, content: content}
+  //     })
+  // })
   // for(let i = 0; i < filesListBase64.length; i++){
   //   let content = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
   //     owner: owner,
@@ -178,8 +192,6 @@ async function getChangedFilesContentForPullRequest(octokit, {owner, repo, pull_
     
   //   filesContent.push({name: filesListBase64[i].filename, content: content})
   // }
-
-  return filesContent;
 }
   
 async function getPullRequestReviews(octokit, {owner, repo, pull_number, app_name}){
