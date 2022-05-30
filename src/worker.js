@@ -86,37 +86,37 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
   // const prAuthor = payload.pull_request.user.login;
 
   
-  // const botPullRequestReviewsIDsArray = await getPullRequestReviews(octokit, {owner, repo, pull_number, app_name: appName});
+  const botPullRequestReviewsIDsArray = await getPullRequestReviews(octokit, {owner, repo, pull_number, app_name: appName});
   const filesContentArray = await getPullRequestChangedFilesContent(octokit, {owner, repo, pull_number, ref});
 
   await postReviewCommentInPullRequest(octokit, {owner, repo, pull_number, commit_id, path: filesContentArray[0].name});
   
-  // filesContentArray.forEach(async (file) => {
-  //   const openReviewsForFile = botPullRequestReviewsIDsArray.filter(review => review.file_path == file.name && review.state !== 'DISMISSED')
+  filesContentArray.forEach(async (file) => {
+    const openReviewsForFile = botPullRequestReviewsIDsArray.filter(review => review.file_path == file.name && review.state !== 'DISMISSED')
     
-  //   // Checking with there is any naughty verb in PR changed files:
-  //   if (badVerbs.some(verb => file.content.includes(verb)))
-  //   {
-  //     // Checking if we already have a review in PR linked to the file name (also, if said review is marked as 'DISMISSED', return check):
-  //     if (openReviewsForFile.length > 0){
-  //       console.info(`Ignoring file [${file.name}] because a review is already set for it`)
-  //       return
-  //     } 
+    // Checking with there is any naughty verb in PR changed files:
+    if (badVerbs.some(verb => file.content.includes(verb)))
+    {
+      // Checking if we already have a review in PR linked to the file name (also, if said review is marked as 'DISMISSED', return check):
+      if (openReviewsForFile.length > 0){
+        console.info(`Ignoring file [${file.name}] because a review is already set for it`)
+        return
+      } 
 
-  //     // If there is no review AND the file has some BAD VERBS, create a review:
-  //     await postReviewCommentInPullRequest(octokit, {owner, repo, pull_number, commit_id, path: file.name});
-  //     await requestReviewerForPullRequest(octokit, {owner, repo, pull_number, team_reviewers: teamReviewrs});
-  //     console.info(`Creating a review for file [${file.name}] due to forbidden verbs: [${badVerbs}]`);
-  //   } 
-  //   else 
-  //   {
-  //     openReviewsForFile.forEach(async (review) => {
-  //         console.info(`Dismissing review [${review.review_id}] for file [${file.name}]`);
-  //         await dismissReviewForPR(octokit, {owner, repo, pull_number, review_id: review.review_id});
-  //       });
-  //     console.info(`Ignoring changed file [${file.name}], nothing wrong with it =)`);
-  //   }
-  // })
+      // If there is no review AND the file has some BAD VERBS, create a review:
+      await postReviewCommentInPullRequest(octokit, {owner, repo, pull_number, commit_id, path: file.name});
+      await requestReviewerForPullRequest(octokit, {owner, repo, pull_number, team_reviewers: teamReviewrs});
+      console.info(`Creating a review for file [${file.name}] due to forbidden verbs: [${badVerbs}]`);
+    } 
+    else 
+    {
+      openReviewsForFile.forEach(async (review) => {
+          console.info(`Dismissing review [${review.review_id}] for file [${file.name}]`);
+          await dismissReviewForPR(octokit, {owner, repo, pull_number, review_id: review.review_id});
+        });
+      console.info(`Ignoring changed file [${file.name}], nothing wrong with it =)`);
+    }
+  })
 }
 
 
@@ -153,7 +153,7 @@ async function getPullRequestChangedFilesContent(octokit, {owner, repo, pull_num
 }
   
 async function getPullRequestReviews(octokit, {owner, repo, pull_number, app_name}){
-  return await octokit.pulls.listReviews({
+  return await octokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}/reviews', {
       owner,
       repo,
       pull_number,
@@ -163,11 +163,11 @@ async function getPullRequestReviews(octokit, {owner, repo, pull_number, app_nam
 }
   
 async function requestReviewerForPullRequest(octokit, {owner, repo, pull_number, team_reviewers}){
-  await octokit.pulls.requestReviewers({
+  await octokit.request('POST /repos/{owner}/{repo}/pulls/{pull_number}/requested_reviewers', {
     owner,
     repo,
     pull_number,
-    reviewers: team_reviewers
+    team_reviewers
   })
 }
   
@@ -193,7 +193,7 @@ async function postReviewCommentInPullRequest(octokit, {owner, repo, pull_number
 }
 
 async function dismissReviewForPR(octokit, {owner, repo, pull_number, review_id}){
-  octokit.pulls.dismissReview({
+  octokit.request('PUT /repos/{owner}/{repo}/pulls/{pull_number}/reviews/{review_id}/dismissals', {
     owner,
     repo,
     pull_number,
