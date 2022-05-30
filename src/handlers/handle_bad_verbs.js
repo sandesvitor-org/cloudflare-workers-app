@@ -15,7 +15,7 @@ async function handleTest(octokit, payload){
 
   const filesContentArray = await getPullRequestChangedFilesContent(octokit, {owner, repo, pull_number, ref});
 
-  filesContentArray.forEach(file => {
+  filesContentArray.forEach(async (file) => {
     await octokit.request('PATCH /repos/{owner}/{repo}/pulls/{pull_number}', {
       owner,
       repo,
