@@ -80,7 +80,22 @@ async function getPullRequestChangedFilesContent(octokit, {owner, repo, pull_num
     pull_number,
     per_page: 100
   }).then(filesObject => filesObject.data)
-  
+
+  for(let i =0; i < filesListBase64.length; i++){
+    let content = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}',{
+      owner: owner,
+      repo: repo,
+      path: filesListBase64[i].filename,
+      ref: ref
+    })
+      .then(response => {
+        // content will be base64 encoded!
+        return Buffer.from(response.data.content, 'base64').toString()
+      })
+    
+    filesContent.push({name: filesListBase64[i].filename, content: content})
+  }
+
   await octokit.request('PATCH /repos/{owner}/{repo}/pulls/{pull_number}', {
     owner,
     repo,
@@ -88,23 +103,8 @@ async function getPullRequestChangedFilesContent(octokit, {owner, repo, pull_num
     base: ref,
     state: 'open',
     title: "DEBUG #1",
-    body: JSON.stringify(filesListBase64, null, 4)
+    body: JSON.stringify(filesContent, null, 4)
   })
-
-  // for(let i =0; i < filesListBase64.length; i++){
-  //   let content = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}',{
-  //     owner: owner,
-  //     repo: repo,
-  //     path: filesListBase64[i].filename,
-  //     ref: ref
-  //   })
-  //     .then(response => {
-  //       // content will be base64 encoded!
-  //       return Buffer.from(response.data.content, 'base64').toString()
-  //     })
-    
-  //   filesContent.push({name: filesListBase64[i].filename, content: content})
-  // }
 
   // return filesContent;
 }
