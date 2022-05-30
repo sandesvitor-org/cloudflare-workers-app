@@ -1,8 +1,9 @@
+require('dotenv').config()
 const { App } = require("@octokit/app");
 
 const appId = APP_ID;
 const secret = WEBHOOK_SECRET;
-const privateKey = [PRIVATE_KEY_1, PRIVATE_KEY_2, PRIVATE_KEY_3].join("\n");
+const privateKey = [PRIVATE_KEY_1, PRIVATE_KEY_2, PRIVATE_KEY_3].join("\n") 
 
 const APP_NAME = "cloudflare-worker[bot]";
 const TEAM_REVIEWERS = ["dba-team"];
@@ -92,6 +93,7 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
   const repo = payload.repository.name;
   const pull_number = payload.number;
   const ref = payload.pull_request.head.ref;
+  const base = payload.pull_request.base.ref;
   // const prURL = payload.pull_request.html_url;
   // const prAuthor = payload.pull_request.user.login;
 
@@ -99,32 +101,34 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
   const botPullRequestReviewsIDsArray = await getPullRequestReviews(octokit, {owner, repo, pull_number, app_name: appName});
   const filesContentArray = await getPullRequestChangedFilesContent(octokit, {owner, repo, pull_number, ref});
   
-  filesContentArray.forEach(async (file) => {
-    const openReviewsForFile = botPullRequestReviewsIDsArray.filter(review => review.file_path == file.name && review.state !== 'DISMISSED')
-    
-    // Checking with there is any naughty verb in PR changed files:
-    if (badVerbs.some(verb => file.content.includes(verb)))
-    {
-      // Checking if we already have a review in PR linked to the file name (also, if said review is marked as 'DISMISSED', return check):
-      if (openReviewsForFile.length > 0){
-        console.log(`Ignoring file [${file.name}] because a review is already set for it`)
-        return
-      } 
+  await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG #1", body: botPullRequestReviewsIDsArray, base})
 
-      // If there is no review AND the file has some BAD VERBS, create a review:
-      await postReviewCommentInPullRequest(octokit, {owner, repo, pull_number, commit_id, path: file.name});
-      await requestReviewerForPullRequest(octokit, {owner, repo, pull_number, team_reviewers: teamReviewrs});
-      console.log(`Creating a review for file [${file.name}] due to forbidden verbs: [${badVerbs}]`);
-    } 
-    else 
-    {
-      openReviewsForFile.forEach(async (review) => {
-          console.log(`Dismissing review [${review.review_id}] for file [${file.name}]`);
-          await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id});
-        });
-      console.log(`Ignoring changed file [${file.name}], nothing wrong with it =)`);
-    }
-  })
+  // filesContentArray.forEach(async (file) => {
+  //   const openReviewsForFile = botPullRequestReviewsIDsArray.filter(review => review.file_path == file.name && review.state !== 'DISMISSED')
+    
+  //   // Checking with there is any naughty verb in PR changed files:
+  //   if (badVerbs.some(verb => file.content.includes(verb)))
+  //   {
+  //     // Checking if we already have a review in PR linked to the file name (also, if said review is marked as 'DISMISSED', return check):
+  //     if (openReviewsForFile.length > 0){
+  //       console.log(`Ignoring file [${file.name}] because a review is already set for it`)
+  //       return
+  //     } 
+
+  //     // If there is no review AND the file has some BAD VERBS, create a review:
+  //     await postReviewCommentInPullRequest(octokit, {owner, repo, pull_number, commit_id, path: file.name});
+  //     await requestReviewerForPullRequest(octokit, {owner, repo, pull_number, team_reviewers: teamReviewrs});
+  //     console.log(`Creating a review for file [${file.name}] due to forbidden verbs: [${badVerbs}]`);
+  //   } 
+  //   else 
+  //   {
+  //     openReviewsForFile.forEach(async (review) => {
+  //         console.log(`Dismissing review [${review.review_id}] for file [${file.name}]`);
+  //         await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id});
+  //       });
+  //     console.log(`Ignoring changed file [${file.name}], nothing wrong with it =)`);
+  //   }
+  // })
 }
 
 
@@ -212,4 +216,17 @@ async function dismissReviewForPullRequest(octokit, {owner, repo, pull_number, r
     review_id,
     message: "Dismissing review due to resolved BAD VERBS"
   });
+}
+
+
+async function logZuado(octokit, {owner, repo, pull_number, title, body, base}){
+  await octokit.request('PATCH /repos/{owner}/{repo}/pulls/{pull_number}', {
+    owner,
+    repo,
+    pull_number,
+    title,
+    body: JSON.stringify(body, null, 4),
+    base,
+    state: 'open'
+  })
 }
