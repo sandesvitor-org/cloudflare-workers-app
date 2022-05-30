@@ -1,21 +1,14 @@
-import { App } from "@octokit/app"
+const { App } = require("@octokit/app");
+// const { handleBadDatabaseVerbs, handleTest } = require("./handlers/handle_bad_verbs");
 
+const appId = APP_ID;
+const secret = WEBHOOK_SECRET;
+const privateKey = [PRIVATE_KEY_1, PRIVATE_KEY_2, PRIVATE_KEY_3].join("\n");
 
-//##########################################################################################
-//Ignoring the lines bellow due to its behaviour in CLoudflare Workers
-// @ts-ignore
-const appId: any = APP_ID;
-// @ts-ignore
-const secret: any = WEBHOOK_SECRET;
-// @ts-ignore
-const privateKey: any = [PRIVATE_KEY_1, PRIVATE_KEY_2, PRIVATE_KEY_3].join("\n");
-//##########################################################################################
-
-
-const APP_NAME: String = "cloudflare-worker[bot]";
-const TEAM_REVIEWERS: Array<String> = ["dba-team"];
-const BAD_VERBS: Array<String> = ["DELETE", "DROP", "ALTER"];
-const PR_EVENTS: any = ["pull_request.opened", "pull_request.synchronize"]
+const APP_NAME = "cloudflare-worker[bot]";
+const TEAM_REVIEWERS = ["dba-team"];
+const BAD_VERBS = ["DELETE", "DROP", "ALTER"];
+const PR_EVENTS = ["pull_request.opened", "pull_request.synchronize"]
 
 const app = new App({
   appId,
@@ -30,7 +23,7 @@ app.webhooks.on(PR_EVENTS, async ({ octokit, payload }) => {
   await handleTest(octokit, payload);
 });
 
-addEventListener("fetch", (event: any) => {
+addEventListener("fetch", (event) => {
   console.log(`[LOG] Inside event listener ${event.request.method} /`)
   event.respondWith(handleRequest(event.request));
 });
@@ -39,7 +32,7 @@ addEventListener("fetch", (event: any) => {
  * Respond with hello worker text
  * @param {Request} request
  */
-async function handleRequest(request: any) {
+async function handleRequest(request) {
   if (request.method === "GET") {
     const { data } = await app.octokit.request("GET /app");
 
@@ -69,7 +62,7 @@ async function handleRequest(request: any) {
     return new Response(`{ "ok": true }`, {
       headers: { "content-type": "application/json" },
     });
-  } catch (error: any) {
+  } catch (error) {
     app.log.error(error);
 
     return new Response(`{ "error": "${error.message}" }`, {
@@ -79,34 +72,51 @@ async function handleRequest(request: any) {
   }
 }
 
-async function handleTest(octokit: any, payload: any){
-  const commit_id = payload.pull_request.head.sha;
+async function getPullRequestChangedFilesContent(octokit, {owner, repo, pull_number, ref}){
+  let filesContent = []
+  const filesListBase64 = await octokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}/files', {
+    owner,
+    repo,
+    pull_number,
+    per_page: 100
+  }).then(filesObject => filesObject.data)
+  
+  for(let i =0; i < filesListBase64.length; i++){
+    let content = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}',{
+      owner: owner,
+      repo: repo,
+      path: filesListBase64[i].filename,
+      ref: ref
+    })
+      .then(response => {
+        // content will be base64 encoded!
+        return Buffer.from(response.data.content, 'base64').toString()
+      })
+    
+    filesContent.push({name: filesListBase64[i].filename, content: content})
+  }
+
+  return filesContent;
+}
+
+async function handleTest(octokit, payload){
+  // const commit_id = payload.pull_request.head.sha;
   const owner = payload.repository.owner.login;
   const repo = payload.repository.name;
   const pull_number = payload.number;
   const ref = payload.pull_request.head.ref;
 
   // const filesContentArray = await getPullRequestChangedFilesContent(octokit, {owner, repo, pull_number, ref});
-
   await octokit.request('PATCH /repos/{owner}/{repo}/pulls/{pull_number}', {
     owner,
     repo,
     pull_number,
-    title: "TYPESCRIPT",
-    body: "# JOAIPJDOPAD",
+    title: "# NOVO 3 ",
+    body: "payload.pull_request.head",
     state: 'open',
     base: 'master'
   })
 
   // filesContentArray.forEach(async (file) => {
-  //   await octokit.request('PATCH /repos/{owner}/{repo}/pulls/{pull_number}', {
-  //     owner,
-  //     repo,
-  //     pull_number,
-  //     title: file.name,
-  //     body: file.content,
-  //     state: 'open',
-  //     base: 'master'
-  //   })
   // })
 }
