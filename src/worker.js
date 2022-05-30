@@ -107,7 +107,7 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
     } 
     else 
     {
-      openReviewsForFile.forEach(review => {
+      openReviewsForFile.forEach(async (review) => {
           console.info(`Dismissing review [${review.review_id}] for file [${file.name}]`);
           await dismissReviewForPR(octokit, {owner, repo, pull_number, review_id: review.review_id});
         });
