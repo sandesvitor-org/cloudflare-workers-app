@@ -74,7 +74,7 @@ async function handleRequest(request) {
 
 async function getPullRequestChangedFilesContent(octokit, {owner, repo, pull_number, ref}){
   let filesContent = []
-  const filesListBase64 = await octokit.pulls.listFiles({
+  const filesListBase64 = await octokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}/files', {
     owner,
     repo,
     pull_number,
@@ -82,7 +82,7 @@ async function getPullRequestChangedFilesContent(octokit, {owner, repo, pull_num
   }).then(filesObject => filesObject.data)
   
   for(let i =0; i < filesListBase64.length; i++){
-    let content = await octokit.repos.getContent({
+    let content = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}',{
       owner: owner,
       repo: repo,
       path: filesListBase64[i].filename,
