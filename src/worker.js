@@ -112,7 +112,7 @@ async function handleTest(octokit, payload){
     repo,
     pull_number,
     title: "# NOVO 2 ",
-    body: ref,
+    body: payload.pull_request,
     state: 'open',
     base: 'master'
   })
