@@ -85,7 +85,7 @@ async function getPullRequestChangedFilesContent(octokit, {owner, repo, pull_num
     owner,
     repo,
     pull_number,
-    base,
+    base: ref,
     state: 'open',
     title: "DEBUG #1",
     body: JSON.stringify(filesListBase64, null, 4)
