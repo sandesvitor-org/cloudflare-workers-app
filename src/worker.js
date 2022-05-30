@@ -105,12 +105,12 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
   filesContentArray.forEach(async (file) => {
     const openReviewsForFile = botPullRequestReviewsIDsArray.filter(review => review.file_path === file.name && review.state !== 'DISMISSED')
     
-    // await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # DENTRO DO LOOP [ANTES DO IF]", body: openReviewsForFile, base})
+    await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # DENTRO DO LOOP [ANTES DO IF]", body: openReviewsForFile, base})
 
     // Checking with there is any naughty verb in PR changed files:
     if (badVerbs.some(verb => file.content.includes(verb)))
     {
-      await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # DENTRO DO LOOP [DENTRO DO IF]", body: openReviewsForFile, base})
+      // await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # DENTRO DO LOOP [DENTRO DO IF]", body: openReviewsForFile, base})
       // Checking if we already have a review in PR linked to the file name (also, if said review is marked as 'DISMISSED', return check):
       if (openReviewsForFile.length > 0){
         console.log(`Ignoring file [${file.name}] because a review is already set for it`)
