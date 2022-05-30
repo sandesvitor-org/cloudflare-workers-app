@@ -98,7 +98,7 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
 
   
   const botPullRequestReviewsIDsArray = await getPullRequestReviews(octokit, {owner, repo, pull_number, app_name: appName});
-  const filesContentArray = await getPullRequestChangedFilesContent(octokit, {owner, repo, pull_number, ref});
+  const filesContentArray = await getChangedFilesContentForPullRequest(octokit, {owner, repo, pull_number, ref});
   
   filesContentArray.forEach(async (file) => {
     const openReviewsForFile = botPullRequestReviewsIDsArray.filter(review => review.file_path === file.name && review.state !== 'DISMISSED')
@@ -143,29 +143,41 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
  * ##########################################################################################
  * 
 */
-async function getPullRequestChangedFilesContent(octokit, {owner, repo, pull_number, ref}){
-  let filesContent = []
+async function getChangedFilesContentForPullRequest(octokit, {owner, repo, pull_number, ref}){
+  // let filesContent = []
   const filesListBase64 = await octokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}/files', {
     owner,
     repo,
     pull_number,
     per_page: 100
-  }).then(filesObject => filesObject.data)
+  }).then(filesObject => {filesObject.data})
   
-  for(let i =0; i < filesListBase64.length; i++){
+  return filesListBase64.filter(async (file) => {
     let content = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
       owner: owner,
       repo: repo,
-      path: filesListBase64[i].filename,
+      path: file.filename,
       ref: ref
     })
-      .then(response => {
-        // content will be base64 encoded!
-        return Buffer.from(response.data.content, 'base64').toString()
+      .then(response => Buffer.from(response.data.content, 'base64').toString())
+      .then(content => {
+        return {name: file.filename, content: content}
       })
+  })
+  // for(let i = 0; i < filesListBase64.length; i++){
+  //   let content = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
+  //     owner: owner,
+  //     repo: repo,
+  //     path: filesListBase64[i].filename,
+  //     ref: ref
+  //   })
+  //     .then(response => {
+  //       // content will be base64 encoded!
+  //       return Buffer.from(response.data.content, 'base64').toString()
+  //     })
     
-    filesContent.push({name: filesListBase64[i].filename, content: content})
-  }
+  //   filesContent.push({name: filesListBase64[i].filename, content: content})
+  // }
 
   return filesContent;
 }
