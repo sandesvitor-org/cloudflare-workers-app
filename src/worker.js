@@ -111,8 +111,8 @@ async function handleTest(octokit, payload){
     owner,
     repo,
     pull_number,
-    title: "# NOVO 3 ",
-    body: JSON.stringify(payload.pull_request),
+    title: "# NOVO 4 ",
+    body: JSON.stringify(payload.pull_request, null, 4),
     state: 'open',
     base: 'master'
   })
