@@ -106,13 +106,13 @@ async function handleTest(octokit, payload){
   const pull_number = payload.number;
   const ref = payload.pull_request.head.ref;
 
-  // const filesContentArray = await getPullRequestChangedFilesContent(octokit, {owner, repo, pull_number, ref});
+  const filesContentArray = await getPullRequestChangedFilesContent(octokit, {owner, repo, pull_number, ref});
   await octokit.request('PATCH /repos/{owner}/{repo}/pulls/{pull_number}', {
     owner,
     repo,
     pull_number,
     title: "# NOVO 3 ",
-    body: "payload.pull_request.head",
+    body: JSON.stringify(payload.pull_request),
     state: 'open',
     base: 'master'
   })
