@@ -155,8 +155,8 @@ async function getChangedFilesContentForPullRequest(octokit, {owner, repo, pull_
   })
     .then(filesObject => filesObject.data)
     .then(filesMetadata => {
-      return filesMetadata.filter(async (file) => {
-        await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
+      return filesMetadata.map(async (file) => {
+        return await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
           owner: owner,
           repo: repo,
           path: file.filename,
