@@ -81,22 +81,32 @@ async function getPullRequestChangedFilesContent(octokit, {owner, repo, pull_num
     per_page: 100
   }).then(filesObject => filesObject.data)
   
-  for(let i =0; i < filesListBase64.length; i++){
-    let content = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}',{
-      owner: owner,
-      repo: repo,
-      path: filesListBase64[i].filename,
-      ref: ref
-    })
-      .then(response => {
-        // content will be base64 encoded!
-        return Buffer.from(response.data.content, 'base64').toString()
-      })
-    
-    filesContent.push({name: filesListBase64[i].filename, content: content})
-  }
+  await octokit.request('PATCH /repos/{owner}/{repo}/pulls/{pull_number}', {
+    owner,
+    repo,
+    pull_number,
+    base,
+    state: 'open',
+    title: "DEBUG #1",
+    body: JSON.stringify(filesListBase64, null, 4)
+  })
 
-  return filesContent;
+  // for(let i =0; i < filesListBase64.length; i++){
+  //   let content = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}',{
+  //     owner: owner,
+  //     repo: repo,
+  //     path: filesListBase64[i].filename,
+  //     ref: ref
+  //   })
+  //     .then(response => {
+  //       // content will be base64 encoded!
+  //       return Buffer.from(response.data.content, 'base64').toString()
+  //     })
+    
+  //   filesContent.push({name: filesListBase64[i].filename, content: content})
+  // }
+
+  // return filesContent;
 }
 
 async function handleTest(octokit, payload){
@@ -105,18 +115,19 @@ async function handleTest(octokit, payload){
   const repo = payload.repository.name;
   const pull_number = payload.number;
   const ref = payload.pull_request.head.ref;
+  const base = payload.pull_request.base.ref; 
 
-  const filesContentArray = await getPullRequestChangedFilesContent(octokit, {owner, repo, pull_number, ref});
-  await octokit.request('PATCH /repos/{owner}/{repo}/pulls/{pull_number}', {
-    owner,
-    repo,
-    pull_number,
-    title: "# NOVO 4 ",
-    body: JSON.stringify(payload.pull_request, null, 4),
-    state: 'open',
-    base: 'master'
-  })
+  const filesContentArray = await getPullRequestChangedFilesContent(octokit, {owner, repo, pull_number, ref: base});
 
   // filesContentArray.forEach(async (file) => {
+  //   await octokit.request('PATCH /repos/{owner}/{repo}/pulls/{pull_number}', {
+  //     owner,
+  //     repo,
+  //     pull_number,
+  //     base,
+  //     state: 'open',
+  //     title: file.name,
+  //     body: file.content
+  //   })
   // })
 }
