@@ -172,7 +172,7 @@ async function requestReviewerForPullRequest(octokit, {owner, repo, pull_number,
 }
   
 async function postReviewCommentInPullRequest(octokit, {owner, repo, pull_number, commit_id, path}){
-  await octokit.pulls.createReview({
+  await octokit.request('POST /repos/{owner}/{repo}/pulls/{pull_number}/reviews', {
     owner: owner,
     repo: repo,
     pull_number: pull_number,
