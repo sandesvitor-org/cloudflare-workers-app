@@ -1,5 +1,5 @@
 const { App } = require("@octokit/app");
-const { handleBadDatabaseVerbs, handleTest } = require("./handlers/handle_bad_verbs");
+// const { handleBadDatabaseVerbs, handleTest } = require("./handlers/handle_bad_verbs");
 
 const appId = APP_ID;
 const secret = WEBHOOK_SECRET;
@@ -70,4 +70,54 @@ async function handleRequest(request) {
       headers: { "content-type": "application/json" },
     });
   }
+}
+
+async function getPullRequestChangedFilesContent(octokit, {owner, repo, pull_number, ref}){
+  let filesContent = []
+  const filesListBase64 = await octokit.pulls.listFiles({
+    owner,
+    repo,
+    pull_number,
+    per_page: 100
+  }).then(filesObject => filesObject.data)
+  
+  for(let i =0; i < filesListBase64.length; i++){
+    let content = await octokit.repos.getContent({
+      owner: owner,
+      repo: repo,
+      path: filesListBase64[i].filename,
+      ref: ref
+    })
+      .then(response => {
+        // content will be base64 encoded!
+        return Buffer.from(response.data.content, 'base64').toString()
+      })
+    
+    filesContent.push({name: filesListBase64[i].filename, content: content})
+  }
+
+  return filesContent;
+}
+
+async function handleTest(octokit, payload){
+  // const commit_id = payload.pull_request.head.sha;
+  const owner = payload.repository.owner.login;
+  const repo = payload.repository.name;
+  const pull_number = payload.number;
+  const ref = payload.pull_request.head.ref;
+
+  // const filesContentArray = await getPullRequestChangedFilesContent(octokit, {owner, repo, pull_number, ref});
+  await octokit.request('PATCH /repos/{owner}/{repo}/pulls/{pull_number}', {
+    owner,
+    repo,
+    pull_number,
+    title: file.name,
+    body: file.content,
+    state: 'open',
+    base: 'master'
+  })
+
+  // filesContentArray.forEach(async (file) => {
+   
+  // })
 }
