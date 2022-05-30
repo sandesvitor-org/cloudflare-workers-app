@@ -96,38 +96,39 @@ async function getPullRequestChangedFilesContent(octokit, {owner, repo, pull_num
     filesContent.push({name: filesListBase64[i].filename, content: content})
   }
 
-  await octokit.request('PATCH /repos/{owner}/{repo}/pulls/{pull_number}', {
-    owner,
-    repo,
-    pull_number,
-    base: ref,
-    state: 'open',
-    title: "DEBUG #1",
-    body: filesContent[0].content
-  })
-
-  // return filesContent;
+  return filesContent;
 }
 
 async function handleTest(octokit, payload){
-  // const commit_id = payload.pull_request.head.sha;
+  const commit_id = payload.pull_request.head.sha;
   const owner = payload.repository.owner.login;
   const repo = payload.repository.name;
   const pull_number = payload.number;
   const ref = payload.pull_request.head.ref;
   const base = payload.pull_request.base.ref; 
 
-  const filesContentArray = await getPullRequestChangedFilesContent(octokit, {owner, repo, pull_number, ref: base});
+  const filesContentArray = await getPullRequestChangedFilesContent(octokit, {owner, repo, pull_number, ref});
 
-  // filesContentArray.forEach(async (file) => {
-  //   await octokit.request('PATCH /repos/{owner}/{repo}/pulls/{pull_number}', {
-  //     owner,
-  //     repo,
-  //     pull_number,
-  //     base,
-  //     state: 'open',
-  //     title: file.name,
-  //     body: file.content
-  //   })
-  // })
+  await postReviewCommentInPullRequest(octokit, {owner, repo, pull_number, commit_id, path: filesContentArray[0].name})
+}
+
+async function postReviewCommentInPullRequest(octokit, {owner, repo, pull_number, commit_id, path}){
+  await octokit.pulls.createReview({
+    owner: owner,
+    repo: repo,
+    pull_number: pull_number,
+    commit_id: commit_id,
+    path: path,
+    event: 'REQUEST_CHANGES',
+    body: path,
+    comments: [
+      {
+        path: path,
+        position: 1,
+        //start_line: 1,
+        //start_side: 1,
+        body: `File ${path} have dangerous query verbs!`
+      }
+    ]
+  });
 }
