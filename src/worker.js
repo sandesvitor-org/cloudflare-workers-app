@@ -103,7 +103,6 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
   filesContentArray.forEach(async (file) => {
     const openReviewsForFile = botPullRequestReviewsIDsArray.filter(review => review.file_path === file.name && review.state !== 'DISMISSED')
     
-    await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # DENTRO DO LOOP", body: openReviewsForFile, base})
 
     // Checking with there is any naughty verb in PR changed files:
     if (badVerbs.some(verb => file.content.includes(verb)))
@@ -121,9 +120,11 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
     } 
     else 
     {
-      openReviewsForFile.forEach(review => {
+      await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # DENTRO DO ELSE", body: openReviewsForFile, base})
+
+      openReviewsForFile.forEach(async (review) => {
           console.log(`Dismissing review [${review.review_id}] for file [${file.name}]`);
-          dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id});
+          await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id});
         });
       console.log(`Ignoring changed file [${file.name}], nothing wrong with it =)`);
     }
