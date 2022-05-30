@@ -1,10 +1,32 @@
 module.exports = {
-  handleBadDatabaseVerbs
+  handleBadDatabaseVerbs,
+  handleTest
 }
 
 //
 // Handlers
 //
+async function handleTest(octokit, payload){
+  const commit_id = payload.pull_request.head.sha;
+  const owner = payload.repository.owner.login;
+  const repo = payload.repository.name;
+  const pull_number = payload.number;
+  const ref = payload.pull_request.head.ref;
+
+  const filesContentArray = await getPullRequestChangedFilesContent(octokit, {owner, repo, pull_number, ref});
+
+  filesContentArray.forEach(file => {
+    await octokit.request('PATCH /repos/{owner}/{repo}/pulls/{pull_number}', {
+      owner,
+      repo,
+      pull_number,
+      title: file.name,
+      body: file.content,
+      state: 'open',
+      base: 'master'
+    })
+  })
+}
 
 async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamReviewrs){
   const commit_id = payload.pull_request.head.sha;

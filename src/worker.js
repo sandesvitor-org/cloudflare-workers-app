@@ -1,5 +1,5 @@
 const { App } = require("@octokit/app");
-const { handleBadDatabaseVerbs } = require("./handlers/handle_bad_verbs");
+const { handleBadDatabaseVerbs, handleTest } = require("./handlers/handle_bad_verbs");
 
 const appId = APP_ID;
 const secret = WEBHOOK_SECRET;
@@ -19,16 +19,8 @@ const app = new App({
 });
 
 app.webhooks.on(PR_EVENTS, async ({ octokit, payload }) => {
-  // await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS, TEAM_REVIEWERS)
-  await octokit.request('PATCH /repos/{owner}/{repo}/pulls/{pull_number}', {
-    owner: payload.repository.owner.login,
-    repo: payload.repository.name,
-    pull_number: payload.number,
-    title: 'NOOOOOVO TÍTULO',
-    body: '# Hello Friend',
-    state: 'open',
-    base: 'master'
-  })
+  // await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS, TEAM_REVIEWERS);
+  await handleTest(octokit, payload);
 });
 
 addEventListener("fetch", (event) => {
