@@ -1,5 +1,4 @@
-import * as octokitApp from "@octokit/app"
-import * as handlers from "./handlers/handle_bad_verbs"
+import { App } from "@octokit/app"
 
 
 //##########################################################################################
@@ -18,7 +17,7 @@ const TEAM_REVIEWERS: Array<String> = ["dba-team"];
 const BAD_VERBS: Array<String> = ["DELETE", "DROP", "ALTER"];
 const PR_EVENTS: any = ["pull_request.opened", "pull_request.synchronize"]
 
-const app = new octokitApp.App({
+const app = new App({
   appId,
   privateKey,
   webhooks: {
@@ -28,7 +27,7 @@ const app = new octokitApp.App({
 
 app.webhooks.on(PR_EVENTS, async ({ octokit, payload }) => {
   // await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS, TEAM_REVIEWERS);
-  await handlers.handleTest(octokit, payload);
+  await handleTest(octokit, payload);
 });
 
 addEventListener("fetch", (event: any) => {
@@ -78,4 +77,36 @@ async function handleRequest(request: any) {
       headers: { "content-type": "application/json" },
     });
   }
+}
+
+async function handleTest(octokit: any, payload: any){
+  const commit_id = payload.pull_request.head.sha;
+  const owner = payload.repository.owner.login;
+  const repo = payload.repository.name;
+  const pull_number = payload.number;
+  const ref = payload.pull_request.head.ref;
+
+  // const filesContentArray = await getPullRequestChangedFilesContent(octokit, {owner, repo, pull_number, ref});
+
+  await octokit.request('PATCH /repos/{owner}/{repo}/pulls/{pull_number}', {
+    owner,
+    repo,
+    pull_number,
+    title: "TYPESCRIPT",
+    body: "# JOAIPJDOPAD",
+    state: 'open',
+    base: 'master'
+  })
+
+  // filesContentArray.forEach(async (file) => {
+  //   await octokit.request('PATCH /repos/{owner}/{repo}/pulls/{pull_number}', {
+  //     owner,
+  //     repo,
+  //     pull_number,
+  //     title: file.name,
+  //     body: file.content,
+  //     state: 'open',
+  //     base: 'master'
+  //   })
+  // })
 }
