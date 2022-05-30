@@ -154,6 +154,20 @@ async function getChangedFilesContentForPullRequest(octokit, {owner, repo, pull_
     per_page: 100
   })
     .then(filesObject => filesObject.data)
+    .then(filesMetadata => {
+      return filesMetadata.filter(async (file) => {
+        await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
+          owner: owner,
+          repo: repo,
+          path: file.filename,
+          ref: ref
+        })
+          .then(response => Buffer.from(response.data.content, 'base64').toString())
+          .then(content => {
+            return {name: file.filename, content: content}
+          })
+      })
+    })
     // .then(filesListBase64 => {
     //   filesListBase64.filter(async (file) => {
     //     await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
