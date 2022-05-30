@@ -3,5 +3,3 @@ type = "webpack"
 account_id = "cc33e0e5a5de33addd061da5ea45f3be"
 workers_dev = true
 compatibility_date = "2022-04-05"
-[build]
-  command = "npm run build"
