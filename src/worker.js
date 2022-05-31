@@ -111,29 +111,28 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
   filesContentArray.forEach(async (file) => {
     const openReviewsForFile = botPullRequestReviewsIDsArray.filter(review => review.file_path === file.name && review.state !== 'DISMISSED')
     
-    console.log(`Open review: ${JSON.stringify(openReviewsForFile, null, 4)}`)
-    console.log(`Inside loop: file ${file.name}`)
+    console.log(`[Inside loop for file ${file.name}]: Open review: ${JSON.stringify(openReviewsForFile, null, 4)}`)
 
     // Checking with there is any naughty verb in PR changed files:
     if (badVerbs.some(verb => file.content.includes(verb)))
     {
       // Checking if we already have a review in PR linked to the file name (also, if said review is marked as 'DISMISSED', return check):
       if (openReviewsForFile.length > 0){
-        console.log(`Ignoring file [${file.name}] because a review is already set for it`)
+        console.log(`[Inside loop for file ${file.name}]: Ignoring file [${file.name}] because a review is already set for it`)
         return
       } 
 
       // If there is no review AND the file has some BAD VERBS, create a review:
       await postReviewCommentInPullRequest(octokit, {owner, repo, pull_number, commit_id, path: file.name});
-      console.log(`Creating a review for file [${file.name}] due to forbidden verbs: [${badVerbs}]`);
+      console.log(`[Inside loop for file ${file.name}]: Creating a review for file [${file.name}] due to forbidden verbs: [${badVerbs}]`);
     } 
     else 
     {
-      console.log(`File ${file.name} DOES NOT have bad verbs`)
+      console.log(`[Inside loop for file ${file.name}]: this file DOES NOT have bad verbs`)
       
       for (let i = 0; i < openReviewsForFile.length; i++){
         await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: openReviewsForFile[i].review_id, file_path: openReviewsForFile[i].file_path});
-        console.log(`Dismissing review for file [${openReviewsForFile[i].file_path}]`);
+        console.log(`[Inside loop for file ${file.name}]: dismissing review for file [${openReviewsForFile[i].file_path}]`);
       }
     }
   })
