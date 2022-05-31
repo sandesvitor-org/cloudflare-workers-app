@@ -101,7 +101,8 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
   
   // await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # FORA DO LOOP - V2", body: filesContentArray, base})
   
-  let hello = []
+  let files_check = []
+  let reviews_check = []
   filesContentArray.forEach(async (file) => {
     const openReviewsForFile = botPullRequestReviewsIDsArray.filter(review => review.file_path === file.name && review.state !== 'DISMISSED')
         
@@ -110,9 +111,7 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
     // Checking with there is any naughty verb in PR changed files:
     if (badVerbs.some(verb => file.content.includes(verb)))
     {
-      hello.push({name: `File ${file.name} entered the check`, content: file.content})
-
-      // await requestReviewerForPullRequest(octokit, {owner, repo, pull_number, base}); //// NÂO ESTÀ FUNCIONANDO!
+      files_check.push({name: `File ${file.name} has bad verbs`, content: file.content})
 
       // await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # DENTRO DO LOOP [DENTRO DO IF]", body: openReviewsForFile, base})
       // Checking if we already have a review in PR linked to the file name (also, if said review is marked as 'DISMISSED', return check):
@@ -127,7 +126,7 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
     } 
     else 
     {
-      // await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # DENTRO DO ELSE", body: openReviewsForFile, base})
+      reviews_check.push({name: `File ${file.name} DOES NOT have bad verbs`, content: file.content})
 
       openReviewsForFile.forEach(async (review) => {
           console.log(`Dismissing review [${review.review_id}] for file [${file.name}]`);
@@ -137,7 +136,7 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
     }
   })
 
-  await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # DEPOIS DE TUDO", body: hello, base})
+  await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # DEPOIS DE TUDO", body: [files_check, reviews_check], base})
 
 }
 
