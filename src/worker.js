@@ -131,11 +131,14 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
     else 
     {
       reviews_check.push({name: `File ${file.name} DOES NOT have bad verbs`, content: file.content})
-
-      openReviewsForFile.forEach(async (review) => {
-          console.log(`Dismissing review [${review.review_id}] for file [${file.name}]`);
-          await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id});
-        });
+      
+      for (let i = 0; i < openReviewsForFile.length; i++){
+        await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: openReviewsForFile[i].review_id});
+      }
+      // await openReviewsForFile.forEach(async (review) => {
+      //     console.log(`Dismissing review [${review.review_id}] for file [${file.name}]`);
+      //     await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id});
+      //   });
       console.log(`Ignoring changed file [${file.name}], nothing wrong with it =)`);
     }
   })
@@ -193,20 +196,20 @@ async function getPullRequestReviews(octokit, {owner, repo, pull_number, app_nam
     }))
 }
   
-async function requestReviewerForPullRequest(octokit, {owner, repo, pull_number, base}){
-  // await logZuado(octokit,  {owner, repo, pull_number, title: "ANTES DA MERDA", body: "NADA", base})
+// async function requestReviewerForPullRequest(octokit, {owner, repo, pull_number, base}){
+//   // await logZuado(octokit,  {owner, repo, pull_number, title: "ANTES DA MERDA", body: "NADA", base})
   
-  let response = await octokit.request('POST /repos/{owner}/{repo}/pulls/{pull_number}/requested_reviewers', {
-    owner,
-    repo,
-    pull_number,
-    team_reviewers: [
-      "dba-team"
-    ]
-  })
+//   let response = await octokit.request('POST /repos/{owner}/{repo}/pulls/{pull_number}/requested_reviewers', {
+//     owner,
+//     repo,
+//     pull_number,
+//     team_reviewers: [
+//       "dba-team"
+//     ]
+//   })
 
-  await logZuado(octokit,  {owner, repo, pull_number, title: "DEPOIS DA MERDA", body: response, base})
-}
+//   await logZuado(octokit,  {owner, repo, pull_number, title: "DEPOIS DA MERDA", body: response, base})
+// }
   
 async function postReviewCommentInPullRequest(octokit, {owner, repo, pull_number, commit_id, path}){
   await octokit.request('POST /repos/{owner}/{repo}/pulls/{pull_number}/reviews', {

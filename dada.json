@@ -1,0 +1,30 @@
+[
+    {
+        "name": "File teste.ex has bad verbs",
+        "content": "DROP\nALTER\n"
+    },
+    {
+        "name": "File teste.txt has bad verbs",
+        "content": "Pim gostoso\nda\nda\nda\nda\nDELETE\nda\n"
+    },
+    {
+        "name": "Open reviews",
+        "content": [
+            {
+                "review_id": 990377068,
+                "file_path": "teste.ex",
+                "state": "CHANGES_REQUESTED"
+            }
+        ]
+    },
+    {
+        "name": "Open reviews",
+        "content": [
+            {
+                "review_id": 990457679,
+                "file_path": "teste.txt",
+                "state": "CHANGES_REQUESTED"
+            }
+        ]
+    }
+]
