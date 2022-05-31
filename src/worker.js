@@ -186,7 +186,7 @@ async function getPullRequestReviews(octokit, {owner, repo, pull_number, app_nam
 }
   
 async function requestReviewerForPullRequest(octokit, {owner, repo, pull_number, base}){
-  await logZuado(octokit,  {owner, repo, pull_number, title: "ANTES DA MERDA", body: "NADA", base})
+  // await logZuado(octokit,  {owner, repo, pull_number, title: "ANTES DA MERDA", body: "NADA", base})
   
   let response = await octokit.request('POST /repos/{owner}/{repo}/pulls/{pull_number}/requested_reviewers', {
     owner,
