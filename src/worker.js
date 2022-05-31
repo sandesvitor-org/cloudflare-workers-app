@@ -191,7 +191,7 @@ async function requestReviewerForPullRequest(octokit, {owner, repo, pull_number}
     repo,
     pull_number,
     team_reviewers: [
-      "sandesvitor-org/dba-team"
+      "dba-team"
     ]
   })
 }
