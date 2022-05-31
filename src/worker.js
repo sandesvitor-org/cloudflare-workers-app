@@ -103,10 +103,17 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
   const pull_number = payload.number;
   const ref = payload.pull_request.head.ref;
   
-  console.log(`Getting PR informations: [getPullRequestReviews] and [getChangedFilesContentForPullRequest]`)
+  console.log(`[Getting PR informations]: getPullRequestReviews and getChangedFilesContentForPullRequest`)
   const botPullRequestReviewsIDsArray = await getPullRequestReviews(octokit, {owner, repo, pull_number, app_name: appName});
   const filesContentArray = await getChangedFilesContentForPullRequest(octokit, {owner, repo, pull_number, ref});
-  console.log(`After PR informations: [getPullRequestReviews] (${botPullRequestReviewsIDsArray}) and [getChangedFilesContentForPullRequest] ((${filesContentArray}))`)
+  console.log(
+    `[After PR informations]: getPullRequestReviews
+    ${JSON.stringify(botPullRequestReviewsIDsArray)}`
+  );
+  console.log(
+    `[After PR informations]: getChangedFilesContentForPullRequest
+    ${JSON.stringify(filesContentArray)}`
+  );
 
   filesContentArray.forEach(async (file) => {
     const openReviewsForFile = botPullRequestReviewsIDsArray.filter(review => review.file_path === file.name && review.state !== 'DISMISSED')
