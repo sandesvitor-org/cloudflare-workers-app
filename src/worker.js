@@ -101,7 +101,7 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
   const filesContentArray = await getChangedFilesContentForPullRequest(octokit, {owner, repo, pull_number, ref});
   
   // await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # FORA DO LOOP - V2", body: botPullRequestReviewsIDsArray, base})
-  await requestReviewerForPullRequest(octokit, {owner, repo, pull_number, team_reviewers: teamReviewrs});
+  await requestReviewerForPullRequest(octokit, {owner, repo, pull_number});
   
   filesContentArray.forEach(async (file) => {
     const openReviewsForFile = botPullRequestReviewsIDsArray.filter(review => review.file_path === file.name && review.state !== 'DISMISSED')
@@ -185,12 +185,14 @@ async function getPullRequestReviews(octokit, {owner, repo, pull_number, app_nam
     }))
 }
   
-async function requestReviewerForPullRequest(octokit, {owner, repo, pull_number, team_reviewers}){
+async function requestReviewerForPullRequest(octokit, {owner, repo, pull_number}){
   await octokit.request('POST /repos/{owner}/{repo}/pulls/{pull_number}/requested_reviewers', {
     owner,
     repo,
     pull_number,
-    team_reviewers
+    team_reviewers: [
+      "sandesvitor-org/dba-team"
+    ]
   })
 }
   
