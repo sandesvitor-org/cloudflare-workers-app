@@ -26,13 +26,10 @@ const app = new App({
 */
 
 app.webhooks.on(PR_EVENTS, async ({ octokit, payload }) => {
-  console.log("Ola")
   try {
-    await logZuado(octokit, {owner: payload.repository.owner.login, repo: payload.repository.name, pull_number: payload.number, title: "DEU BOM?", body: "OLOKO", base: payload.pull_request.base.ref})
     await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS, TEAM_REVIEWERS);
-    await logZuado(octokit, {owner: payload.repository.owner.login, repo: payload.repository.name, pull_number: payload.number, title: "DEU BOM!", body: "OLOKINHO, MEU", base: payload.pull_request.base.ref})
   } catch(e){
-    await logZuado(octokit, {owner: payload.repository.owner.login, repo: payload.repository.name, pull_number: payload.number, title: "DEU RUIM...", body: e.message, base: payload.pull_request.base.ref})
+    console.log(`Error in handle PR webhook: ${e.message}`)
   }
 });
 
@@ -99,7 +96,7 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
   const repo = payload.repository.name;
   const pull_number = payload.number;
   const ref = payload.pull_request.head.ref;
-  const base = payload.pull_request.base.ref;
+  // const base = payload.pull_request.base.ref;
   // const prURL = payload.pull_request.html_url;
   // const prAuthor = payload.pull_request.user.login;
   
@@ -133,13 +130,12 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
       
       for (let i = 0; i < openReviewsForFile.length; i++){
         await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: openReviewsForFile[i].review_id, file_path: openReviewsForFile[i].file_path});
-        console.log(`Ignoring changed file [${openReviewsForFile[i].file_path}], nothing wrong with it =)`);
+        console.log(`Dismissing review for file [${openReviewsForFile[i].file_path}]`);
       }
     }
   })
 
-  // await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # DEPOIS DE TUDO", body: [files_check, reviews_check, dismissal_files].flat(), base})
-
+  console.log("End of PR bad verbs handler")
 }
 
 
