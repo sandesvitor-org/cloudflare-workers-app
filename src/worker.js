@@ -233,7 +233,7 @@ async function postReviewCommentInPullRequest(octokit, {owner, repo, pull_number
 }
 
 async function dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id}){
-  octokit.request('PUT /repos/{owner}/{repo}/pulls/{pull_number}/reviews/{review_id}/dismissals', {
+  await octokit.request('PUT /repos/{owner}/{repo}/pulls/{pull_number}/reviews/{review_id}/dismissals', {
     owner,
     repo,
     pull_number,
