@@ -30,6 +30,7 @@ app.webhooks.on(PR_EVENTS, async ({ octokit, payload }) => {
   try {
     await logZuado(octokit, {owner: payload.repository.owner.login, repo: payload.repository.name, pull_number: payload.number, title: "DEU BOM?", body: "OLOKO", base: payload.pull_request.base.ref})
     await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS, TEAM_REVIEWERS);
+    await logZuado(octokit, {owner: payload.repository.owner.login, repo: payload.repository.name, pull_number: payload.number, title: "DEU BOM!", body: "OLOKINHO, MEU", base: payload.pull_request.base.ref})
   } catch(e){
     await logZuado(octokit, {owner: payload.repository.owner.login, repo: payload.repository.name, pull_number: payload.number, title: "DEU RUIM...", body: e.message, base: payload.pull_request.base.ref})
   }
