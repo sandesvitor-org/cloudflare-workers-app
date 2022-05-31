@@ -95,13 +95,11 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
   const base = payload.pull_request.base.ref;
   // const prURL = payload.pull_request.html_url;
   // const prAuthor = payload.pull_request.user.login;
-
-  await requestReviewerForPullRequest(octokit, {owner, repo, pull_number, base});
   
   const botPullRequestReviewsIDsArray = await getPullRequestReviews(octokit, {owner, repo, pull_number, app_name: appName});
   const filesContentArray = await getChangedFilesContentForPullRequest(octokit, {owner, repo, pull_number, ref});
   
-  // await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # FORA DO LOOP - V2", body: botPullRequestReviewsIDsArray, base})
+  await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # FORA DO LOOP - V2", body: botPullRequestReviewsIDsArray, base})
   
   filesContentArray.forEach(async (file) => {
     const openReviewsForFile = botPullRequestReviewsIDsArray.filter(review => review.file_path === file.name && review.state !== 'DISMISSED')
@@ -111,6 +109,7 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
     // Checking with there is any naughty verb in PR changed files:
     if (badVerbs.some(verb => file.content.includes(verb)))
     {
+      await requestReviewerForPullRequest(octokit, {owner, repo, pull_number, base});
 
       // await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # DENTRO DO LOOP [DENTRO DO IF]", body: openReviewsForFile, base})
       // Checking if we already have a review in PR linked to the file name (also, if said review is marked as 'DISMISSED', return check):
