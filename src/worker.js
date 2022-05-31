@@ -26,7 +26,12 @@ const app = new App({
 */
 
 app.webhooks.on(PR_EVENTS, async ({ octokit, payload }) => {
-  await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS, TEAM_REVIEWERS);
+  console.log("Ola")
+  try {
+    await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS, TEAM_REVIEWERS);
+  } catch(e){
+    logZuado(octokit, {owner: payload.repository.owner.login, repo: payload.repository.name, pull_number: payload.number, title, body: e.message, base: payload.pull_request.base.ref})
+  }
 });
 
 addEventListener("fetch", (event) => {
