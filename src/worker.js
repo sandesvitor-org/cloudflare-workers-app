@@ -101,6 +101,7 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
   const filesContentArray = await getChangedFilesContentForPullRequest(octokit, {owner, repo, pull_number, ref});
   
   // await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # FORA DO LOOP - V2", body: botPullRequestReviewsIDsArray, base})
+  await requestReviewerForPullRequest(octokit, {owner, repo, pull_number, team_reviewers: teamReviewrs});
   
   filesContentArray.forEach(async (file) => {
     const openReviewsForFile = botPullRequestReviewsIDsArray.filter(review => review.file_path === file.name && review.state !== 'DISMISSED')
@@ -110,6 +111,7 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
     // Checking with there is any naughty verb in PR changed files:
     if (badVerbs.some(verb => file.content.includes(verb)))
     {
+
       // await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # DENTRO DO LOOP [DENTRO DO IF]", body: openReviewsForFile, base})
       // Checking if we already have a review in PR linked to the file name (also, if said review is marked as 'DISMISSED', return check):
       if (openReviewsForFile.length > 0){
@@ -119,7 +121,6 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
 
       // If there is no review AND the file has some BAD VERBS, create a review:
       await postReviewCommentInPullRequest(octokit, {owner, repo, pull_number, commit_id, path: file.name});
-      await requestReviewerForPullRequest(octokit, {owner, repo, pull_number, team_reviewers: teamReviewrs});
       console.log(`Creating a review for file [${file.name}] due to forbidden verbs: [${badVerbs}]`);
     } 
     else 
