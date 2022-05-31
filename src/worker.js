@@ -98,26 +98,15 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
   
   const botPullRequestReviewsIDsArray = await getPullRequestReviews(octokit, {owner, repo, pull_number, app_name: appName});
   const filesContentArray = await getChangedFilesContentForPullRequest(octokit, {owner, repo, pull_number, ref});
-  
-  // await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # FORA DO LOOP - V2", body: filesContentArray, base})
-  
-  let files_check = []
-  let reviews_check = []
-  let dismissal_files = []
 
   filesContentArray.forEach(async (file) => {
     const openReviewsForFile = botPullRequestReviewsIDsArray.filter(review => review.file_path === file.name && review.state !== 'DISMISSED')
-        
-    dismissal_files.push({name: `Open reviews`, content: openReviewsForFile})
-
-    // await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # DENTRO DO LOOP [ANTES DO IF]", body: openReviewsForFile, base})
 
     // Checking with there is any naughty verb in PR changed files:
     if (badVerbs.some(verb => file.content.includes(verb)))
     {
-      files_check.push({name: `File ${file.name} has bad verbs`, content: file.content})
+      await requestReviewerForPullRequest(octokit, {owner, repo, pull_number, team_reviewers: teamReviewrs});
 
-      // await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # DENTRO DO LOOP [DENTRO DO IF]", body: openReviewsForFile, base})
       // Checking if we already have a review in PR linked to the file name (also, if said review is marked as 'DISMISSED', return check):
       if (openReviewsForFile.length > 0){
         console.log(`Ignoring file [${file.name}] because a review is already set for it`)
@@ -139,7 +128,7 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
     }
   })
 
-  await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # DEPOIS DE TUDO", body: [files_check, reviews_check, dismissal_files].flat(), base})
+  // await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # DEPOIS DE TUDO", body: [files_check, reviews_check, dismissal_files].flat(), base})
 
 }
 
@@ -192,20 +181,14 @@ async function getPullRequestReviews(octokit, {owner, repo, pull_number, app_nam
     }))
 }
   
-// async function requestReviewerForPullRequest(octokit, {owner, repo, pull_number, base}){
-//   // await logZuado(octokit,  {owner, repo, pull_number, title: "ANTES DA MERDA", body: "NADA", base})
-  
-//   let response = await octokit.request('POST /repos/{owner}/{repo}/pulls/{pull_number}/requested_reviewers', {
-//     owner,
-//     repo,
-//     pull_number,
-//     team_reviewers: [
-//       "dba-team"
-//     ]
-//   })
-
-//   await logZuado(octokit,  {owner, repo, pull_number, title: "DEPOIS DA MERDA", body: response, base})
-// }
+async function requestReviewerForPullRequest(octokit, {owner, repo, pull_number, team_reviewers}){
+  await octokit.request('POST /repos/{owner}/{repo}/pulls/{pull_number}/requested_reviewers', {
+    owner,
+    repo,
+    pull_number,
+    team_reviewers
+  })
+}
   
 async function postReviewCommentInPullRequest(octokit, {owner, repo, pull_number, commit_id, path}){
   await octokit.request('POST /repos/{owner}/{repo}/pulls/{pull_number}/reviews', {
