@@ -133,12 +133,8 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
       reviews_check.push({name: `File ${file.name} DOES NOT have bad verbs`, content: file.content})
       
       for (let i = 0; i < openReviewsForFile.length; i++){
-        await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: openReviewsForFile[i].review_id});
+        await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: openReviewsForFile[i].review_id, file_path: openReviewsForFile[i].file_path});
       }
-      // await openReviewsForFile.forEach(async (review) => {
-      //     console.log(`Dismissing review [${review.review_id}] for file [${file.name}]`);
-      //     await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id});
-      //   });
       console.log(`Ignoring changed file [${file.name}], nothing wrong with it =)`);
     }
   })
@@ -232,14 +228,14 @@ async function postReviewCommentInPullRequest(octokit, {owner, repo, pull_number
   });
 }
 
-async function dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id}){
+async function dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id, file_path}){
   await octokit.request('PUT /repos/{owner}/{repo}/pulls/{pull_number}/reviews/{review_id}/dismissals', {
     owner,
     repo,
     pull_number,
     review_id,
-    message: "Dismissing review due to resolved BAD VERBS"
-  });
+    message: `Dismissing review for file ${file_path} due to resolved issue`
+  })
 }
 
 
