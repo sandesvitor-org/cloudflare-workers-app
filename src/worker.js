@@ -5,9 +5,9 @@ const secret = WEBHOOK_SECRET;
 const privateKey = [PRIVATE_KEY_1, PRIVATE_KEY_2, PRIVATE_KEY_3].join("\n") 
 
 const APP_NAME = "cloudflare-worker";
-const TEAM_REVIEWERS = ["dba-team"];
+const TEAM_REVIEWERS = "dba-team";
 const BAD_VERBS = ["DELETE", "DROP", "ALTER"];
-const PR_EVENTS = ["pull_request.opened", "pull_request.synchronize"]
+const PR_EVENTS = ["pull_request.opened", "pull_request.synchronize"];
 
 const app = new App({
   appId,
@@ -30,7 +30,7 @@ app.webhooks.on(PR_EVENTS, async ({ octokit, payload }) => {
 });
 
 addEventListener("fetch", (event) => {
-  console.log(`[LOG] Inside event listener ${event.request.method} /`)
+  console.log(`[LOG] Inside event listener ${event.request.method} /`);
   event.respondWith(handleRequest(event.request));
 });
 
@@ -190,7 +190,9 @@ async function requestReviewerForPullRequest(octokit, {owner, repo, pull_number,
     owner,
     repo,
     pull_number,
-    team_reviewers
+    team_reviewers: [
+      team_reviewers
+    ]
   })
 }
   
