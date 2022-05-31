@@ -125,7 +125,7 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
     {
       // Checking if we already have a review in PR linked to the file name (also, if said review is marked as 'DISMISSED', return check):
       if (openReviewsForFile.length > 0){
-        console.log(`[Inside loop for file ${file.name}]: Ignoring file [${file.name}] because a review is already set for it and returning from funtion...`);
+        console.log(`[Inside loop for file ${file.name}]: Ignoring and returning from function because file [${file.name}] review is already set`);
         continue;
       } 
 
@@ -138,14 +138,14 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
       console.log(`[Inside loop for file ${file.name}]: this file DOES NOT have bad verbs`)
       
       if (openReviewsForFile.length === 0){
-        console.log(`[Inside loop for file ${file.name}]: Ignoring file [${file.name}] because he has no bad verbs and no review pending and returning from function`);
+        console.log(`[Inside loop for file ${file.name}]: Ignoring and returning from function beacuse file [${file.name}] has no bad verbs and no review pending`);
         continue;
       } 
 
-      for (let j = 0; j < openReviewsForFile.length; j++){
-        console.log(`[Inside loop for file ${file.name}]: beggining to dismmiss of review nº [${openReviewsForFile[j].review_id}] for file [${openReviewsForFile[j].file_path}]`);
-        await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: openReviewsForFile[i].review_id, file_path: openReviewsForFile[i].file_path});
-        console.log(`[Inside loop for file ${file.name}]: concluded dismiss of review nº [${openReviewsForFile[j].review_id}] for file [${openReviewsForFile[j].file_path}]`);
+      for (const review of openReviewsForFile){
+        console.log(`[Inside loop for file ${file.name}]: beggining to dismiss of review number [${review.review_id}] for file [${review.file_path}]`);
+        await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id, file_path: review.file_path});
+        console.log(`[Inside loop for file ${file.name}]: concluded dismiss of review number [${review.review_id}] for file [${review.file_path}]`);
       }
     }
   }
