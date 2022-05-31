@@ -136,7 +136,7 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
     }
   })
 
-  await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # DEPOIS DE TUDO", body: [files_check, reviews_check], base})
+  await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # DEPOIS DE TUDO", body: [files_check, reviews_check].flat(), base})
 
 }
 
