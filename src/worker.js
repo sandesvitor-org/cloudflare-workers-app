@@ -118,7 +118,7 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
   filesContentArray.forEach(async (file) => {
     const openReviewsForFile = botPullRequestReviewsIDsArray.filter(review => review.file_path === file.name && review.state !== 'DISMISSED')
     
-    console.log(`[Inside loop for file ${file.name}]: Open review: ${openReviewsForFile}`)
+    console.log(`[Inside loop for file ${file.name}]: Open review: ${JSON.stringify(openReviewsForFile)}`)
 
     // Checking with there is any naughty verb in PR changed files:
     if (badVerbs.some(verb => file.content.includes(verb)))
