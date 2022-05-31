@@ -103,9 +103,13 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
   
   let files_check = []
   let reviews_check = []
+  let dismissal_files = []
+
   filesContentArray.forEach(async (file) => {
     const openReviewsForFile = botPullRequestReviewsIDsArray.filter(review => review.file_path === file.name && review.state !== 'DISMISSED')
         
+    dismissal_files.push({name: `Open reviews`, content: openReviewsForFile})
+
     // await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # DENTRO DO LOOP [ANTES DO IF]", body: openReviewsForFile, base})
 
     // Checking with there is any naughty verb in PR changed files:
@@ -136,7 +140,7 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
     }
   })
 
-  await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # DEPOIS DE TUDO", body: [files_check, reviews_check].flat(), base})
+  await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # DEPOIS DE TUDO", body: [files_check, reviews_check, dismissal_files].flat(), base})
 
 }
 
