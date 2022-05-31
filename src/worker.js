@@ -103,11 +103,16 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
   // const prURL = payload.pull_request.html_url;
   // const prAuthor = payload.pull_request.user.login;
   
+  console.log(`Getting PR informations: [getPullRequestReviews] and [getChangedFilesContentForPullRequest]`)
   const botPullRequestReviewsIDsArray = await getPullRequestReviews(octokit, {owner, repo, pull_number, app_name: appName});
   const filesContentArray = await getChangedFilesContentForPullRequest(octokit, {owner, repo, pull_number, ref});
+  console.log(`After PR informations: [getPullRequestReviews] (${JSON.stringify(botPullRequestReviewsIDsArray, null, 4)}) and [getChangedFilesContentForPullRequest] ((${JSON.stringify(filesContentArray, null, 4)}))`)
 
   filesContentArray.forEach(async (file) => {
     const openReviewsForFile = botPullRequestReviewsIDsArray.filter(review => review.file_path === file.name && review.state !== 'DISMISSED')
+    
+    console.log(`Open review: ${JSON.stringify(openReviewsForFile, null, 4)}`)
+    console.log(`Inside loop: file ${file.name}`)
 
     // Checking with there is any naughty verb in PR changed files:
     if (badVerbs.some(verb => file.content.includes(verb)))
@@ -124,12 +129,12 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
     } 
     else 
     {
-      reviews_check.push({name: `File ${file.name} DOES NOT have bad verbs`, content: file.content})
+      console.log(`File ${file.name} DOES NOT have bad verbs`)
       
       for (let i = 0; i < openReviewsForFile.length; i++){
         await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: openReviewsForFile[i].review_id, file_path: openReviewsForFile[i].file_path});
+        console.log(`Ignoring changed file [${openReviewsForFile[i].file_path}], nothing wrong with it =)`);
       }
-      console.log(`Ignoring changed file [${file.name}], nothing wrong with it =)`);
     }
   })
 
