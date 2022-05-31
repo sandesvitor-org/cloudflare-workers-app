@@ -26,6 +26,12 @@ const app = new App({
 */
 
 app.webhooks.on(PR_EVENTS, async ({ octokit, payload }) => {
+  const prURL = payload.pull_request.html_url;
+  const prAuthor = payload.pull_request.user.login;
+  const repo = payload.repository.name;
+
+  console.log(`Webhook primary info: repo [${repo}]; URL [${prURL}]; author [${prAuthor}]`)
+
   try {
     await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS, TEAM_REVIEWERS);
   } catch(e){
@@ -96,9 +102,6 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
   const repo = payload.repository.name;
   const pull_number = payload.number;
   const ref = payload.pull_request.head.ref;
-  // const base = payload.pull_request.base.ref;
-  // const prURL = payload.pull_request.html_url;
-  // const prAuthor = payload.pull_request.user.login;
   
   console.log(`Getting PR informations: [getPullRequestReviews] and [getChangedFilesContentForPullRequest]`)
   const botPullRequestReviewsIDsArray = await getPullRequestReviews(octokit, {owner, repo, pull_number, app_name: appName});
@@ -224,18 +227,5 @@ async function dismissReviewForPullRequest(octokit, {owner, repo, pull_number, r
     pull_number,
     review_id,
     message: `Dismissing review for file ${file_path} due to resolved issue`
-  })
-}
-
-
-async function logZuado(octokit, {owner, repo, pull_number, title, body, base}){
-  await octokit.request('PATCH /repos/{owner}/{repo}/pulls/{pull_number}', {
-    owner,
-    repo,
-    pull_number,
-    title,
-    body: JSON.stringify(body, null, 4),
-    base,
-    state: 'open'
   })
 }
