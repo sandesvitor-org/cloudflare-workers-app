@@ -115,7 +115,7 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
     ${JSON.stringify(filesContentArray)}`
   );
 
-  for (file of filesContentArray){
+  for (const file of filesContentArray){
     const openReviewsForFile = botPullRequestReviewsIDsArray.filter(review => review.file_path === file.name && review.state !== 'DISMISSED');
     
     console.log(`[Inside loop for file ${file.name}]: Open review: ${JSON.stringify(openReviewsForFile)}`);
@@ -203,15 +203,14 @@ async function getChangedFilesContentForPullRequest(octokit, {owner, repo, pull_
     owner,
     repo,
     pull_number,
-    per_page: 100
-  })
-    .then(filesObject => filesObject.data)
+    per_page: 100 // TO-DO: Fix pagination
+  }).then(filesObject => filesObject.data)
     
-  for(let i = 0; i < filesListBase64.length; i++){
+  for(const fileBase64 of filesListBase64){
     let content = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
       owner: owner,
       repo: repo,
-      path: filesListBase64[i].filename,
+      path: fileBase64.filename,
       ref: ref
     })
       .then(response => {
@@ -219,7 +218,7 @@ async function getChangedFilesContentForPullRequest(octokit, {owner, repo, pull_
         return Buffer.from(response.data.content, 'base64').toString()
       })
     
-    filesContent.push({name: filesListBase64[i].filename, content: content})
+    filesContent.push({name: fileBase64.filename, content: content})
   }
 
   return filesContent;
