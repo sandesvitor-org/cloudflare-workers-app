@@ -138,8 +138,9 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
       console.log(`[Inside loop for file ${file.name}]: this file DOES NOT have bad verbs`)
       
       for (let i = 0; i < openReviewsForFile.length; i++){
+        console.log(`[Inside loop for file ${file.name}]: beggining to dismmiss review [${openReviewsForFile[i].review_id}] for [${openReviewsForFile[i].file_path}]`);
         await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: openReviewsForFile[i].review_id, file_path: openReviewsForFile[i].file_path});
-        console.log(`[Inside loop for file ${file.name}]: dismissing review for file [${openReviewsForFile[i].file_path}]`);
+        console.log(`[Inside loop for file ${file.name}]: concluded dismiis review [${openReviewsForFile[i].review_id}] for file [${openReviewsForFile[i].file_path}]`);
       }
     }
   })
