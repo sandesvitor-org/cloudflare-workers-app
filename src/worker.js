@@ -96,12 +96,12 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
   // const prURL = payload.pull_request.html_url;
   // const prAuthor = payload.pull_request.user.login;
 
+  await requestReviewerForPullRequest(octokit, {owner, repo, pull_number, base});
   
   const botPullRequestReviewsIDsArray = await getPullRequestReviews(octokit, {owner, repo, pull_number, app_name: appName});
   const filesContentArray = await getChangedFilesContentForPullRequest(octokit, {owner, repo, pull_number, ref});
   
   // await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # FORA DO LOOP - V2", body: botPullRequestReviewsIDsArray, base})
-  await requestReviewerForPullRequest(octokit, {owner, repo, pull_number});
   
   filesContentArray.forEach(async (file) => {
     const openReviewsForFile = botPullRequestReviewsIDsArray.filter(review => review.file_path === file.name && review.state !== 'DISMISSED')
@@ -185,8 +185,8 @@ async function getPullRequestReviews(octokit, {owner, repo, pull_number, app_nam
     }))
 }
   
-async function requestReviewerForPullRequest(octokit, {owner, repo, pull_number}){
-  await octokit.request('POST /repos/{owner}/{repo}/pulls/{pull_number}/requested_reviewers', {
+async function requestReviewerForPullRequest(octokit, {owner, repo, pull_number, base}){
+  let response = await octokit.request('POST /repos/{owner}/{repo}/pulls/{pull_number}/requested_reviewers', {
     owner,
     repo,
     pull_number,
@@ -194,6 +194,8 @@ async function requestReviewerForPullRequest(octokit, {owner, repo, pull_number}
       "dba-team"
     ]
   })
+
+  await logZuado(octokit,  {owner, repo, pull_number, title: "TEM REVIEW???", response, base})
 }
   
 async function postReviewCommentInPullRequest(octokit, {owner, repo, pull_number, commit_id, path}){
