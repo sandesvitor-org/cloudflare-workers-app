@@ -99,14 +99,14 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
   const botPullRequestReviewsIDsArray = await getPullRequestReviews(octokit, {owner, repo, pull_number, app_name: appName});
   const filesContentArray = await getChangedFilesContentForPullRequest(octokit, {owner, repo, pull_number, ref});
 
+  await logZuado(octokit, {owner, repo, pull_number, title: "DEBUG # 1", body: botPullRequestReviewsIDsArray, base})
+
   filesContentArray.forEach(async (file) => {
     const openReviewsForFile = botPullRequestReviewsIDsArray.filter(review => review.file_path === file.name && review.state !== 'DISMISSED')
 
     // Checking with there is any naughty verb in PR changed files:
     if (badVerbs.some(verb => file.content.includes(verb)))
     {
-      // await requestReviewerForPullRequest(octokit, {owner, repo, pull_number, team_reviewers: teamReviewrs});
-
       // Checking if we already have a review in PR linked to the file name (also, if said review is marked as 'DISMISSED', return check):
       if (openReviewsForFile.length > 0){
         console.log(`Ignoring file [${file.name}] because a review is already set for it`)
