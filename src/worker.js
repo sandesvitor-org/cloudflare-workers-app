@@ -168,6 +168,7 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs){
     }
   }
 
+  console.info(logBatch)
   console.log("End of PR bad verbs handler")
 }
 
