@@ -1,6 +1,6 @@
 name = "cloudflare-worker"
 type = "webpack"
-account_id = "cc33e0e5a5de33addd061da5ea45f3be"
+account_id = "CF_ACCOUNT_ID"
 workers_dev = true
 compatibility_date = "2022-04-05"
 

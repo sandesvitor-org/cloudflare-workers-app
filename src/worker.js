@@ -143,46 +143,12 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
       } 
 
       for (const review of openReviewsForFile){
-        console.log(`[Inside loop for file ${file.name}]: beggining to dismiss of review number [${review.review_id}] for file [${review.file_path}]`);
+        console.log(`[Inside loop for file ${file.name}]: since this file has a open review AND no bad verbs, beggining to dismiss of review number [${review.review_id}]`);
         await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id, file_path: review.file_path});
-        console.log(`[Inside loop for file ${file.name}]: concluded dismiss of review number [${review.review_id}] for file [${review.file_path}]`);
+        console.log(`[Inside loop for file ${file.name}]: concluded dismissing review number [${review.review_id}]`);
       }
     }
   }
-  // filesContentArray.forEach(async (file) => {
-  //   const openReviewsForFile = botPullRequestReviewsIDsArray.filter(review => review.file_path === file.name && review.state !== 'DISMISSED')
-    
-  //   console.log(`[Inside loop for file ${file.name}]: Open review: ${JSON.stringify(openReviewsForFile)}`)
-
-  //   // Checking with there is any naughty verb in PR changed files:
-  //   if (badVerbs.some(verb => file.content.includes(verb)))
-  //   {
-  //     // Checking if we already have a review in PR linked to the file name (also, if said review is marked as 'DISMISSED', return check):
-  //     if (openReviewsForFile.length > 0){
-  //       console.log(`[Inside loop for file ${file.name}]: Ignoring file [${file.name}] because a review is already set for it and returning from funtion...`)
-  //       return
-  //     } 
-
-  //     // If there is no review AND the file has some BAD VERBS, create a review:
-  //     await postReviewCommentInPullRequest(octokit, {owner, repo, pull_number, commit_id, path: file.name});
-  //     console.log(`[Inside loop for file ${file.name}]: Creating a review for file [${file.name}] due to forbidden verbs: [${badVerbs}]`);
-  //   } 
-  //   else 
-  //   {
-  //     console.log(`[Inside loop for file ${file.name}]: this file DOES NOT have bad verbs`)
-      
-  //     if (openReviewsForFile.length === 0){
-  //       console.log(`[Inside loop for file ${file.name}]: Ignoring file [${file.name}] because he has no bad verbs and no review pending and returning from function`)
-  //       return
-  //     } 
-
-  //     for (let i = 0; i < openReviewsForFile.length; i++){
-  //       console.log(`[Inside loop for file ${file.name}]: beggining to dismmiss review [${openReviewsForFile[i].review_id}] for [${openReviewsForFile[i].file_path}]`);
-  //       await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: openReviewsForFile[i].review_id, file_path: openReviewsForFile[i].file_path});
-  //       console.log(`[Inside loop for file ${file.name}]: concluded dismiis review [${openReviewsForFile[i].review_id}] for file [${openReviewsForFile[i].file_path}]`);
-  //     }
-  //   }
-  // })
 
   console.log("End of PR bad verbs handler")
 }
@@ -234,15 +200,6 @@ async function getPullRequestReviews(octokit, {owner, repo, pull_number, app_nam
       return {review_id: data.id, file_path: data.body, state: data.state} 
     }))
 }
-  
-// async function requestReviewerForPullRequest(octokit, {owner, repo, pull_number, team_reviewers}){
-//   await octokit.request('POST /repos/{owner}/{repo}/pulls/{pull_number}/requested_reviewers', {
-//     owner,
-//     repo,
-//     pull_number,
-//     team_reviewers
-//   })
-// }
   
 async function postReviewCommentInPullRequest(octokit, {owner, repo, pull_number, commit_id, path}){
   await octokit.request('POST /repos/{owner}/{repo}/pulls/{pull_number}/reviews', {
