@@ -118,15 +118,15 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs){
 
     
   // looping through open reviews to dissmiss it if the file has been corrected but there is still a review opened for it
-  for (const review in botPullRequestReviewsIDsArray){
-    const lingeringReview = filesContentArray.filter(file => file.name === review.file_path && review.state !== 'DISMISSED')
+  // for (const review in botPullRequestReviewsIDsArray){
+  //   const lingeringReview = filesContentArray.filter(file => file.name === review.file_path && review.state !== 'DISMISSED')
     
-    if (lingeringReview.length === 0){
-      logBatch.step4 =`[Inside loop for review ${review.review_id}] of file [${review.file_path}]: since this file has a open review, beggining to dismiss it`
-      await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id, file_path: review.file_path});
-      logBatch.step5 = `[Inside loop for review ${review.review_id}] of file [${review.file_path}]: concluded dismissing review`
-    }
-  }
+  //   if (lingeringReview.length === 0){
+  //     logBatch.step4 =`[Inside loop for review ${review.review_id}] of file [${review.file_path}]: since this file has a open review, beggining to dismiss it`
+  //     await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id, file_path: review.file_path});
+  //     logBatch.step5 = `[Inside loop for review ${review.review_id}] of file [${review.file_path}]: concluded dismissing review`
+  //   }
+  // }
 
 
 
