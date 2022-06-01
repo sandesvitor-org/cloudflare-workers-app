@@ -102,61 +102,68 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs){
   const pull_number = payload.number;
   const ref = payload.pull_request.head.ref;
   
-  console.log(`[Getting PR informations]: getPullRequestReviews and getChangedFilesContentForPullRequest`)
+  const logBatch = {}
+
+  logBatch.step1 = `[Getting PR informations]: getPullRequestReviews and getChangedFilesContentForPullRequest`
   const botPullRequestReviewsIDsArray = await getPullRequestReviews(octokit, {owner, repo, pull_number, app_name: appName});
   const filesContentArray = await getChangedFilesContentForPullRequest(octokit, {owner, repo, pull_number, ref});
-  console.log(
+  logBatch.step2 =
     `[After PR informations]: getPullRequestReviews
     ${JSON.stringify(botPullRequestReviewsIDsArray)}`
-  );
-  console.log(
+  logBatch.step3 =
     `[After PR informations]: getChangedFilesContentForPullRequest
     ${JSON.stringify(filesContentArray)}`
-  );
 
+
+
+    
   // looping through open reviews to dissmiss it if the file has been corrected but there is still a review opened for it
   for (const review in botPullRequestReviewsIDsArray){
     const lingeringReview = filesContentArray.filter(file => file.name === review.file_path && review.state !== 'DISMISSED')
     
     if (lingeringReview.length === 0){
-      console.log(`[Inside loop for review ${review.review_id}] of file [${review.file_path}]: since this file has a open review, beggining to dismiss it`);
+      logBatch.step4 =`[Inside loop for review ${review.review_id}] of file [${review.file_path}]: since this file has a open review, beggining to dismiss it`
       await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id, file_path: review.file_path});
-      console.log(`[Inside loop for review ${review.review_id}] of file [${review.file_path}]: concluded dismissing review number `);
+      logBatch.step5 = `[Inside loop for review ${review.review_id}] of file [${review.file_path}]: concluded dismissing review`
     }
   }
+
+
+
+
 
   // looping through files that have any diff compared to the main branch
   for (const file of filesContentArray){
     const openReviewsForFile = botPullRequestReviewsIDsArray.filter(review => review.file_path === file.name && review.state !== 'DISMISSED');
     
-    console.log(`[Inside loop for file ${file.name}]: Open review: ${JSON.stringify(openReviewsForFile)}`);
+    logBatch.step5 = `[Inside loop for file ${file.name}]: Open review: ${JSON.stringify(openReviewsForFile)}`
 
     // Checking with there is any naughty verb in PR changed files:
     if (badVerbs.some(verb => file.content.includes(verb)))
     {
       // Checking if we already have a review in PR linked to the file name (also, if said review is marked as 'DISMISSED', return check):
       if (openReviewsForFile.length > 0){
-        console.log(`[Inside loop for file ${file.name}]: Ignoring and returning from function because file [${file.name}] review is already set`);
+        logBatch.step5 = `[Inside loop for file ${file.name}]: Ignoring and returning from function because file [${file.name}] review is already set`
         continue;
       } 
 
       // If there is no review AND the file has some BAD VERBS, create a review:
       await postReviewCommentInPullRequest(octokit, {owner, repo, pull_number, commit_id, path: file.name});
-      console.log(`[Inside loop for file ${file.name}]: Creating a review for file [${file.name}] due to forbidden verbs: [${badVerbs}]`);
+      logBatch.step6 = `[Inside loop for file ${file.name}]: Creating a review for file [${file.name}] due to forbidden verbs: [${badVerbs}]`
     } 
     else 
     {
-      console.log(`[Inside loop for file ${file.name}]: this file DOES NOT have bad verbs`)
+      logBatch.step7 = `[Inside loop for file ${file.name}]: this file DOES NOT have bad verbs`
       
       if (openReviewsForFile.length === 0){
-        console.log(`[Inside loop for file ${file.name}]: Ignoring and returning from function beacuse file [${file.name}] has no bad verbs and no review pending`);
+        logBatch.step8 = `[Inside loop for file ${file.name}]: Ignoring and returning from function because file [${file.name}] has no bad verbs and no review pending`
         continue;
       } 
 
       for (const review of openReviewsForFile){
-        console.log(`[Inside loop for file ${file.name}]: since this file has a open review AND no bad verbs, beggining to dismiss of review number [${review.review_id}]`);
+        logBatch.step9 = `[Inside loop for file ${file.name}]: since this file has a open review AND no bad verbs, beggining to dismiss of review number [${review.review_id}]`
         await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id, file_path: review.file_path});
-        console.log(`[Inside loop for file ${file.name}]: concluded dismissing review number [${review.review_id}]`);
+        logBatch.step10 = `[Inside loop for file ${file.name}]: concluded dismissing review number [${review.review_id}]`
       }
     }
   }
