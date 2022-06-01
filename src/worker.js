@@ -32,7 +32,7 @@ app.webhooks.on(PR_EVENTS, async ({ octokit, payload }) => {
   console.log(`Webhook primary info: repo [${repo}]; URL [${prURL}]; author [${prAuthor}]`)
 
   try {
-    await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS, TEAM_REVIEWERS);
+    await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS);
   } catch(e){
     console.log(`Error in handle PR webhook: ${e.message}`)
   }
@@ -114,16 +114,16 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs){
     ${JSON.stringify(filesContentArray)}`
   );
 
-  // // looping through open reviews to dissmiss it if the file has been corrected but there is still a review opened for it
-  // for (const review in botPullRequestReviewsIDsArray){
-  //   const lingeringReview = filesContentArray.filter(file => file.name === review.file_path && review.state !== 'DISMISSED')
+  // looping through open reviews to dissmiss it if the file has been corrected but there is still a review opened for it
+  for (const review in botPullRequestReviewsIDsArray){
+    const lingeringReview = filesContentArray.filter(file => file.name === review.file_path && review.state !== 'DISMISSED')
     
-  //   if (lingeringReview.length === 0){
-  //     console.log(`[Inside loop for review ${review.review_id}] of file [${review.file_path}]: since this file has a open review, beggining to dismiss it`);
-  //     await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id, file_path: review.file_path});
-  //     console.log(`[Inside loop for review ${review.review_id}] of file [${review.file_path}]: concluded dismissing review number `);
-  //   }
-  // }
+    if (lingeringReview.length === 0){
+      console.log(`[Inside loop for review ${review.review_id}] of file [${review.file_path}]: since this file has a open review, beggining to dismiss it`);
+      await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id, file_path: review.file_path});
+      console.log(`[Inside loop for review ${review.review_id}] of file [${review.file_path}]: concluded dismissing review number `);
+    }
+  }
 
   // looping through files that have any diff compared to the main branch
   for (const file of filesContentArray){
