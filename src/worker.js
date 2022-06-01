@@ -5,7 +5,6 @@ const secret = WEBHOOK_SECRET;
 const privateKey = [PRIVATE_KEY_1, PRIVATE_KEY_2, PRIVATE_KEY_3].join("\n") 
 
 const APP_NAME = "cloudflare-worker";
-const TEAM_REVIEWERS = ["sandesvitor-org/dba-team"];
 const BAD_VERBS = ["DELETE", "DROP", "ALTER"];
 const PR_EVENTS = ["pull_request.opened", "pull_request.synchronize"];
 
@@ -96,7 +95,7 @@ async function handleRequest(request) {
  * 
  * ##########################################################################################
 */
-async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamReviewrs){
+async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs){
   const commit_id = payload.pull_request.head.sha;
   const owner = payload.repository.owner.login;
   const repo = payload.repository.name;
@@ -115,16 +114,16 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs, teamR
     ${JSON.stringify(filesContentArray)}`
   );
 
-  // looping through open reviews to dissmiss it if the file has been corrected but there is still a review opened for it
-  for (const review in botPullRequestReviewsIDsArray){
-    const lingeringReview = filesContentArray.filter(file => file.name === review.file_path && review.state !== 'DISMISSED')
+  // // looping through open reviews to dissmiss it if the file has been corrected but there is still a review opened for it
+  // for (const review in botPullRequestReviewsIDsArray){
+  //   const lingeringReview = filesContentArray.filter(file => file.name === review.file_path && review.state !== 'DISMISSED')
     
-    if (lingeringReview.length === 0){
-      console.log(`[Inside loop for review ${review.review_id}] of file [${review.file_path}]: since this file has a open review, beggining to dismiss it`);
-      await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id, file_path: review.file_path});
-      console.log(`[Inside loop for review ${review.review_id}] of file [${review.file_path}]: concluded dismissing review number `);
-    }
-  }
+  //   if (lingeringReview.length === 0){
+  //     console.log(`[Inside loop for review ${review.review_id}] of file [${review.file_path}]: since this file has a open review, beggining to dismiss it`);
+  //     await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id, file_path: review.file_path});
+  //     console.log(`[Inside loop for review ${review.review_id}] of file [${review.file_path}]: concluded dismissing review number `);
+  //   }
+  // }
 
   // looping through files that have any diff compared to the main branch
   for (const file of filesContentArray){
