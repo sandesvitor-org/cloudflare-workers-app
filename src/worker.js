@@ -136,7 +136,7 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs){
   for (const file of filesContentArray){
     const openReviewsForFile = botPullRequestReviewsIDsArray.filter(review => review.file_path === file.name && review.state !== 'DISMISSED');
     
-    logBatch.step5 = `[Inside loop for file ${file.name}]: Open review: ${JSON.stringify(openReviewsForFile)}`
+    logBatch.step4 = `[Inside loop for file ${file.name}]: Open review: ${JSON.stringify(openReviewsForFile)}`
 
     // Checking with there is any naughty verb in PR changed files:
     if (badVerbs.some(verb => file.content.includes(verb)))
