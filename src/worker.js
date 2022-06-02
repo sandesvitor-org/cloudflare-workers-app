@@ -117,13 +117,16 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs){
     ${JSON.stringify(pullRequestChagedFilesContentArray)}`)
 
   // looping through open reviews to dissmiss it if the file has been corrected but there is still a review opened for it
-  for (const review in botPullRequestReviewsIDsArray){
+  for (const [index, review] in botPullRequestReviewsIDsArray){
     const lingeringReviewArray = pullRequestChagedFilesContentArray.filter(file => file.name === review.file_path)
     
+    console.debug(index)
+    console.debug(review)
+    
     if (lingeringReviewArray.length === 0){
-      console.info(`[Inside loop for review ${review.review_id}] of file [${review.file_path}]: since this file has a open review, beggining to dismiss it`)
+      console.info(`[Inside loop for review ${review.review_id} of file ${review.file_path}]: since this file has a open review, beggining to dismiss it`)
       await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id, file_path: review.file_path});
-      console.info(`[Inside loop for review ${review.review_id}] of file [${review.file_path}]: concluded dismissing review`)
+      console.info(`[Inside loop for review ${review.review_id} of file ${review.file_path}]: concluded dismissing review`)
     }
   }
 
