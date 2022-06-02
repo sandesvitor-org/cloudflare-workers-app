@@ -104,20 +104,25 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs){
   
   console.info(`[Getting PR informations]: getPullRequestReviews and getChangedFilesContentForPullRequest`)
   
-  const botPullRequestReviewsIDsArray = await getPullRequestReviews(octokit, {owner, repo, pull_number, app_name: appName});
+  const pullRequestReviews = await getPullRequestReviews(octokit, {owner, repo, pull_number}).then(res => res.data)
+  
+  const botPullRequestReviews = pullRequestReviews.filter(review => review.user.login === `${appName}[bot]`)
+      .map(data => { return {review_id: data.id, file_path: data.body, state: data.state} })
+
+  const pullRequestApprovals = pullRequestReviews.filter(review => review.state === 'APPROVED' && review.user.login === 'sandesvitor')
   
   const pullRequestChagedFilesContentArray = await getChangedFilesContentForPullRequest(octokit, {owner, repo, pull_number, ref});
   
   console.info(
     `[After PR informations]: getPullRequestReviews
-    ${JSON.stringify(botPullRequestReviewsIDsArray)}`)
+    ${JSON.stringify(botPullRequestReviews)}`)
   
   console.info(
     `[After PR informations]: getChangedFilesContentForPullRequest
     ${JSON.stringify(pullRequestChagedFilesContentArray)}`)
 
   // looping through open reviews to dissmiss it if the file has been corrected but there is still a review opened for it
-  for (const review of botPullRequestReviewsIDsArray){
+  for (const review of botPullRequestReviews){
     if (review.state === 'DISMISSED'){
       continue
     }
@@ -131,9 +136,25 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs){
     }
   }
 
+  // checking if DBA team approved PR (in this case return)
+  if (pullRequestApprovals.length > 0){
+    const botOpenReviews = botPullRequestReviews.filter(review => review.state === 'CHANGES_REQUESTED');
+    
+    console.info(`[Inside loop for file ${file.name}]: Pull Request approved by DBA team, dismissing reviews`)
+
+    for (const review of botOpenReviews){
+      await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id, message: `Review ${review_id} dismiss due to DBA team PR approval`});
+      console.info(`[Inside loop for file ${file.name}]: concluded dismissing review number [${review.review_id}]`)
+    }
+
+    console.info("Pull Request approved by DBA team, returning")
+    
+    return
+  }
+
   // looping through files that have any diff compared to the main branch
   for (const file of pullRequestChagedFilesContentArray){
-    const openReviewsForFile = botPullRequestReviewsIDsArray.filter(review => review.file_path === file.name && review.state !== 'DISMISSED');
+    const openReviewsForFile = botPullRequestReviews.filter(review => review.file_path === file.name && review.state !== 'CHANGES_REQUESTED');
     
     console.info(`[Inside loop for file ${file.name}]: Open review: ${JSON.stringify(openReviewsForFile)}`)
 
@@ -147,21 +168,22 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs){
       } 
 
       // If there is no review AND the file has some BAD VERBS, create a review:
-      await postReviewCommentInPullRequest(octokit, {owner, repo, pull_number, commit_id, path: file.name});
       console.info(`[Inside loop for file ${file.name}]: Creating a review for file [${file.name}] due to forbidden verbs: [${badVerbs}]`)
+      await postReviewCommentInPullRequest(octokit, {owner, repo, pull_number, commit_id, path: file.name});
+      console.info(`[Inside loop for file ${file.name}]: Review created for file [${file.name}]`)
     } 
     else 
     {
       console.info(`[Inside loop for file ${file.name}]: this file DOES NOT have bad verbs`)
       
       if (openReviewsForFile.length === 0){
-        console.info(`[Inside loop for file ${file.name}]: Ignoring and returning from function because file [${file.name}] has no bad verbs and no review pending`)
+        console.info(`[Inside loop for file ${file.name}]: Ignoring and returning from function because file [${file.name}] has no bad verbs and no pending review`)
         continue;
       } 
 
       for (const review of openReviewsForFile){
         console.info(`[Inside loop for file ${file.name}]: since this file has a open review AND no bad verbs, beggining to dismiss of review number [${review.review_id}]`)
-        await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id, file_path: review.file_path});
+        await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id, message: `Dismissing review for file ${file_path} due to resolved issue`});
         console.info(`[Inside loop for file ${file.name}]: concluded dismissing review number [${review.review_id}]`)
       }
     }
@@ -207,15 +229,12 @@ async function getChangedFilesContentForPullRequest(octokit, {owner, repo, pull_
   return filesContent;
 }
   
-async function getPullRequestReviews(octokit, {owner, repo, pull_number, app_name}){
+async function getPullRequestReviews(octokit, {owner, repo, pull_number}){
   return await octokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}/reviews', {
       owner,
       repo,
       pull_number
   })
-    .then(res => res.data.filter(review => review.user.login === `${app_name}[bot]`).map(data => { 
-      return {review_id: data.id, file_path: data.body, state: data.state} 
-    }))
 }
   
 async function postReviewCommentInPullRequest(octokit, {owner, repo, pull_number, commit_id, path}){
@@ -239,12 +258,12 @@ async function postReviewCommentInPullRequest(octokit, {owner, repo, pull_number
   });
 }
 
-async function dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id, file_path}){
+async function dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id, message}){
   await octokit.request('PUT /repos/{owner}/{repo}/pulls/{pull_number}/reviews/{review_id}/dismissals', {
     owner,
     repo,
     pull_number,
     review_id,
-    message: `Dismissing review for file ${file_path} due to resolved issue`
+    message
   })
 }
