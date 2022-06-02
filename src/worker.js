@@ -23,7 +23,6 @@ const app = new App({
  * 
  * ##########################################################################################
 */
-
 app.webhooks.on(PR_EVENTS, async ({ octokit, payload }) => {
   const prURL = payload.pull_request.html_url;
   const prAuthor = payload.pull_request.user.login;
@@ -35,6 +34,20 @@ app.webhooks.on(PR_EVENTS, async ({ octokit, payload }) => {
     await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS);
   } catch(e){
     console.log(`Error on handling PR webhook [handleBadDatabaseVerbs]: ${e.message}`)
+  }
+});
+
+app.webhooks.on("pull_request_review.submitted", async ({ octokit, payload }) => {
+  const prURL = payload.pull_request.html_url;
+  const prAuthor = payload.pull_request.user.login;
+  const repo = payload.repository.name;
+
+  console.log(`Webhook pull_request_review.submitted`)
+
+  try {
+    await handleDBAReview(octokit, payload);
+  } catch(e){
+    console.log(`Error on handling PR webhook [handleDBAReview]: ${e.message}`)
   }
 });
 
@@ -95,6 +108,34 @@ async function handleRequest(request) {
  * 
  * ##########################################################################################
 */
+async function handleDBAReview(octokit, payload){
+  const owner = payload.repository.owner.login;
+  const repo = payload.repository.name;
+  const pull_number = payload.number;
+
+  const pullRequestReviews = await getPullRequestReviews(octokit, {owner, repo, pull_number}).then(res => res.data)
+  
+  const botPullRequestReviews = await getPullRequestReviews(octokit, {owner, repo, pull_number}).then(res => res.data).filter(review => review.user.login === `${appName}[bot]`)
+      .map(data => { return {review_id: data.id, file_path: data.body, state: data.state} })
+
+  const pullRequestApprovals = pullRequestReviews.filter(review => review.state === 'APPROVED' && review.user.login === 'sandesvitor')
+
+  // checking if DBA team approved PR (in this case return)
+  if (pullRequestApprovals.length > 0){
+    const botOpenReviews = botPullRequestReviews.filter(review => review.state === 'CHANGES_REQUESTED');
+    
+    console.info(`[DBA Review]: Pull Request approved by DBA team, dismissing reviews`)
+
+    for (const review of botOpenReviews){
+      await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id, message: `Review ${review_id} dismiss due to DBA team PR approval`});
+      console.info(`[DBA Review]: ${file.name}]: concluded dismissing review number [${review.review_id}]`)
+    }
+
+    console.info("Pull Request approved by DBA team, returning")
+    return
+  }
+}
+
 async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs){
   const commit_id = payload.pull_request.head.sha;
   const owner = payload.repository.owner.login;
@@ -106,7 +147,7 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs){
   
   const pullRequestReviews = await getPullRequestReviews(octokit, {owner, repo, pull_number}).then(res => res.data)
   
-  const botPullRequestReviews = pullRequestReviews.filter(review => review.user.login === `${appName}[bot]`)
+  const botPullRequestReviews = await getPullRequestReviews(octokit, {owner, repo, pull_number}).then(res => res.data).filter(review => review.user.login === `${appName}[bot]`)
       .map(data => { return {review_id: data.id, file_path: data.body, state: data.state} })
 
   const pullRequestApprovals = pullRequestReviews.filter(review => review.state === 'APPROVED' && review.user.login === 'sandesvitor')
@@ -134,22 +175,6 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs){
       await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id, file_path: review.file_path});
       console.info(`[Inside loop for review ${review.review_id} of file ${review.file_path}]: concluded dismissing review`)
     }
-  }
-
-  // checking if DBA team approved PR (in this case return)
-  if (pullRequestApprovals.length > 0){
-    const botOpenReviews = botPullRequestReviews.filter(review => review.state === 'CHANGES_REQUESTED');
-    
-    console.info(`[Inside loop for file ${file.name}]: Pull Request approved by DBA team, dismissing reviews`)
-
-    for (const review of botOpenReviews){
-      await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id, message: `Review ${review_id} dismiss due to DBA team PR approval`});
-      console.info(`[Inside loop for file ${file.name}]: concluded dismissing review number [${review.review_id}]`)
-    }
-
-    console.info("Pull Request approved by DBA team, returning")
-    
-    return
   }
 
   // looping through files that have any diff compared to the main branch
