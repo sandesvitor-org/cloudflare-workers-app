@@ -115,7 +115,7 @@ async function handleDBAReview(octokit, payload){
   const botPullRequestReviews = await getPullRequestReviews(octokit, {owner, repo, pull_number}).then(res => res.data).filter(review => review.user.login === `${appName}[bot]`)
       .map(data => { return {review_id: data.id, file_path: data.body, state: data.state} })
 
-  console.log("1")
+  console.log("2")
   const pullRequestApprovals = pullRequestReviews.filter(review => review.state === 'APPROVED' && review.user.login === 'sandesvitor')
 
   console.info(
