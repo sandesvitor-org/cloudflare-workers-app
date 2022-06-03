@@ -130,11 +130,12 @@ async function handleDBAReview(octokit, payload, appName){
   if (pullRequestApprovals.length > 0){
     const botOpenReviews = botPullRequestReviews.filter(review => review.state === 'CHANGES_REQUESTED');
     
-    console.info(`[DBA Review]: Pull Request approved by DBA team, dismissing reviews`)
+    console.info(`[handleDBAReview - Dismissing reviews]: Pull Request approved by DBA team, dismissing reviews`)
 
     for (const review of botOpenReviews){
-      await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id, message: `Review ${review_id} dismiss due to DBA team PR approval`});
-      console.info(`[DBA Review]: ${file.name}]: concluded dismissing review number [${review.review_id}]`)
+      console.info(`[handleDBAReview - Dismissing reviews]: dismissing review number [${review.review_id}]`)
+      await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id, message: `Review ${review_id.review_id} dismissed due to DBA team PR approval`});
+      console.info(`[handleDBAReview - Dismissing reviews]: concluded dismissing review number [${review.review_id}]`)
     }
 
     console.log("[handleDBAReview - Pull Request approved by DBA team, returning]")
