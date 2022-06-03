@@ -22,19 +22,19 @@ const app = new App({
  * 
  * ##########################################################################################
 */
-// app.webhooks.on(["pull_request.opened", "pull_request.synchronize"], async ({ octokit, payload }) => {
-//   const prURL = payload.pull_request.html_url;
-//   const prAuthor = payload.pull_request.user.login;
-//   const repo = payload.repository.name;
+app.webhooks.on(["pull_request.opened", "pull_request.synchronize"], async ({ octokit, payload }) => {
+  const prURL = payload.pull_request.html_url;
+  const prAuthor = payload.pull_request.user.login;
+  const repo = payload.repository.name;
 
-//   console.log(`[Webhook pull_request.opened and pull_request.synchronize]: repo [${repo}]; URL [${prURL}]; author [${prAuthor}]`)
+  console.log(`[Webhook pull_request.opened and pull_request.synchronize]: repo [${repo}]; URL [${prURL}]; author [${prAuthor}]`)
 
-//   try {
-//     await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS);
-//   } catch(e){
-//     console.log(`Error on handling PR webhook [handleBadDatabaseVerbs]: ${e.message}`)
-//   }
-// });
+  try {
+    await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS);
+  } catch(e){
+    console.log(`Error on handling PR webhook [handleBadDatabaseVerbs]: ${e.message}`)
+  }
+});
 
 app.webhooks.on("pull_request_review.submitted", async ({ octokit, payload }) => {
   console.log(`[Webhook pull_request_review.submitted]`)
@@ -107,12 +107,17 @@ async function handleDBAReview(octokit, payload){
   const repo = payload.repository.name;
   const pull_number = payload.number;
 
+  console.info(`[handleDBAReview - Getting PR informations]: getPullRequestReviews`)
   const pullRequestReviews = await getPullRequestReviews(octokit, {owner, repo, pull_number}).then(res => res.data)
   
   const botPullRequestReviews = await getPullRequestReviews(octokit, {owner, repo, pull_number}).then(res => res.data).filter(review => review.user.login === `${appName}[bot]`)
       .map(data => { return {review_id: data.id, file_path: data.body, state: data.state} })
 
   const pullRequestApprovals = pullRequestReviews.filter(review => review.state === 'APPROVED' && review.user.login === 'sandesvitor')
+
+  console.info(
+    `[handleDBAReview - After PR informations]: getPullRequestReviews
+    ${JSON.stringify(pullRequestApprovals)}`)
 
   // checking if DBA team approved PR (in this case return)
   if (pullRequestApprovals.length > 0){
