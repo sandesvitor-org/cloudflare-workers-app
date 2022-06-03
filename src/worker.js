@@ -107,6 +107,7 @@ async function handleDBAReview(octokit, payload){
   const repo = payload.repository.name;
   const pull_number = payload.number;
 
+  console.debug(JSON.stringify(payload))
   console.info(`[handleDBAReview - Getting PR informations]: getPullRequestReviews`)
   const pullRequestReviews = await getPullRequestReviews(octokit, {owner, repo, pull_number}).then(res => res.data)
 
