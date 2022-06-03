@@ -27,7 +27,7 @@ const app = new App({
 //   const prAuthor = payload.pull_request.user.login;
 //   const repo = payload.repository.name;
 
-//   console.log(`[Webhook pull_request.opened and pull_request.synchronize]: repo [${repo}]; URL [${prURL}]; author [${prAuthor}]`)
+//   console.log(`[Webhook - events {pull_request.opened,  pull_request.synchronize}]: repo [${repo}]; URL [${prURL}]; author [${prAuthor}]`)
 
 //   try {
 //     await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS);
@@ -37,7 +37,7 @@ const app = new App({
 // });
 
 app.webhooks.on("pull_request_review.submitted", async ({ octokit, payload }) => {
-  console.log(`[Webhook pull_request_review.submitted]`)
+  console.log(`[Webhook - event {pull_request_review.submitted}]`)
   try {
     await handleDBAReview(octokit, payload);
   } catch(e){
@@ -109,10 +109,12 @@ async function handleDBAReview(octokit, payload){
 
   console.info(`[handleDBAReview - Getting PR informations]: getPullRequestReviews`)
   const pullRequestReviews = await getPullRequestReviews(octokit, {owner, repo, pull_number}).then(res => res.data)
-  
+
+  console.log("1")
   const botPullRequestReviews = await getPullRequestReviews(octokit, {owner, repo, pull_number}).then(res => res.data).filter(review => review.user.login === `${appName}[bot]`)
       .map(data => { return {review_id: data.id, file_path: data.body, state: data.state} })
 
+  console.log("1")
   const pullRequestApprovals = pullRequestReviews.filter(review => review.state === 'APPROVED' && review.user.login === 'sandesvitor')
 
   console.info(
@@ -130,7 +132,7 @@ async function handleDBAReview(octokit, payload){
       console.info(`[DBA Review]: ${file.name}]: concluded dismissing review number [${review.review_id}]`)
     }
 
-    console.info("Pull Request approved by DBA team, returning")
+    console.log("[handleDBAReview - Pull Request approved by DBA team, returning]")
     return
   }
 }
@@ -142,7 +144,7 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs){
   const pull_number = payload.number;
   const ref = payload.pull_request.head.ref;
   
-  console.info(`[Getting PR informations]: getPullRequestReviews and getChangedFilesContentForPullRequest`)
+  console.info(`[handleBadDatabaseVerbs - Getting PR informations]: getPullRequestReviews and getChangedFilesContentForPullRequest`)
   
   const botPullRequestReviews = await getPullRequestReviews(octokit, {owner, repo, pull_number}).then(res => res.data).filter(review => review.user.login === `${appName}[bot]`)
       .map(data => { return {review_id: data.id, file_path: data.body, state: data.state} })
@@ -150,11 +152,11 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs){
   const pullRequestChagedFilesContentArray = await getChangedFilesContentForPullRequest(octokit, {owner, repo, pull_number, ref});
   
   console.info(
-    `[After PR informations]: getPullRequestReviews
+    `[handleBadDatabaseVerbs - After PR informations]: getPullRequestReviews
     ${JSON.stringify(botPullRequestReviews)}`)
   
   console.info(
-    `[After PR informations]: getChangedFilesContentForPullRequest
+    `[handleBadDatabaseVerbs - After PR informations]: getChangedFilesContentForPullRequest
     ${JSON.stringify(pullRequestChagedFilesContentArray)}`)
 
   // looping through open reviews to dissmiss it if the file has been corrected but there is still a review opened for it
@@ -166,9 +168,9 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs){
     const lingeringReviewArray = pullRequestChagedFilesContentArray.filter(file => file.name === review.file_path && review.state === 'CHANGES_REQUESTED')
         
     if (lingeringReviewArray.length === 0){
-      console.info(`[Inside loop for review ${review.review_id} of file ${review.file_path}]: since this file has a open review, beggining to dismiss it`)
+      console.info(`[handleBadDatabaseVerbs - Inside loop for review ${review.review_id} of file ${review.file_path}]: since this file has a open review, beggining to dismiss it`)
       await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id, file_path: review.file_path});
-      console.info(`[Inside loop for review ${review.review_id} of file ${review.file_path}]: concluded dismissing review`)
+      console.info(`[handleBadDatabaseVerbs - Inside loop for review ${review.review_id} of file ${review.file_path}]: concluded dismissing review`)
     }
   }
 
@@ -176,25 +178,25 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs){
   for (const file of pullRequestChagedFilesContentArray){
     const openReviewsForFile = botPullRequestReviews.filter(review => review.file_path === file.name && review.state !== 'CHANGES_REQUESTED');
     
-    console.info(`[Inside loop for file ${file.name}]: Open review: ${JSON.stringify(openReviewsForFile)}`)
+    console.info(`[handleBadDatabaseVerbs - Inside loop for file ${file.name}]: Open review: ${JSON.stringify(openReviewsForFile)}`)
 
     // Checking with there is any naughty verb in PR changed files:
     if (badVerbs.some(verb => file.content.includes(verb)))
     {
       // Checking if we already have a review in PR linked to the file name (also, if said review is marked as 'DISMISSED', return check):
       if (openReviewsForFile.length > 0){
-        console.info(`[Inside loop for file ${file.name}]: Ignoring and returning from function because file [${file.name}] review is already set`)
+        console.info(`[handleBadDatabaseVerbs - Inside loop for file ${file.name}]: Ignoring and returning from function because file [${file.name}] review is already set`)
         continue;
       } 
 
       // If there is no review AND the file has some BAD VERBS, create a review:
-      console.info(`[Inside loop for file ${file.name}]: Creating a review for file [${file.name}] due to forbidden verbs: [${badVerbs}]`)
+      console.info(`[handleBadDatabaseVerbs - Inside loop for file ${file.name}]: Creating a review for file [${file.name}] due to forbidden verbs: [${badVerbs}]`)
       await postReviewCommentInPullRequest(octokit, {owner, repo, pull_number, commit_id, path: file.name});
-      console.info(`[Inside loop for file ${file.name}]: Review created for file [${file.name}]`)
+      console.info(`[handleBadDatabaseVerbs - Inside loop for file ${file.name}]: Review created for file [${file.name}]`)
     } 
     else 
     {
-      console.info(`[Inside loop for file ${file.name}]: this file DOES NOT have bad verbs`)
+      console.info(`[handleBadDatabaseVerbs - Inside loop for file ${file.name}]: this file DOES NOT have bad verbs`)
       
       if (openReviewsForFile.length === 0){
         console.info(`[Inside loop for file ${file.name}]: Ignoring and returning from function because file [${file.name}] has no bad verbs and no pending review`)
@@ -202,14 +204,14 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs){
       } 
 
       for (const review of openReviewsForFile){
-        console.info(`[Inside loop for file ${file.name}]: since this file has a open review AND no bad verbs, beggining to dismiss of review number [${review.review_id}]`)
+        console.info(`[handleBadDatabaseVerbs - Inside loop for file ${file.name}]: since this file has a open review AND no bad verbs, beggining to dismiss of review number [${review.review_id}]`)
         await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id, message: `Dismissing review for file ${file_path} due to resolved issue`});
-        console.info(`[Inside loop for file ${file.name}]: concluded dismissing review number [${review.review_id}]`)
+        console.info(`[handleBadDatabaseVerbs - Inside loop for file ${file.name}]: concluded dismissing review number [${review.review_id}]`)
       }
     }
   }
 
-  console.log("End of PR bad verbs handler")
+  console.log("[handleBadDatabaseVerbs - End of PR bad verbs handler]")
 }
 
 
