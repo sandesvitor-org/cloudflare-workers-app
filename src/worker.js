@@ -6,6 +6,7 @@ const privateKey = [PRIVATE_KEY_1, PRIVATE_KEY_2, PRIVATE_KEY_3].join("\n")
 
 const APP_NAME = "cloudflare-worker";
 const BAD_VERBS = ["DELETE", "DROP", "ALTER"];
+const DBA_TEAM_NAME = "dba-team";
 
 const app = new App({
   appId,
@@ -18,18 +19,16 @@ const app = new App({
 /* 
  * ##########################################################################################
  * 
- * IMPLEMENTING WEBHOOKS
+ * IMPLEMENTING WEBHOOKS EVENTS
  * 
  * ##########################################################################################
 */
-
 app.webhooks.onAny(async ({ octokit, payload }) => {
-
   if (payload.action === 'submitted' && payload.hasOwnProperty('review')){
     console.log(`[Webhook - event {pull_request_review.submitted}]`)
     try 
     {
-      await handleDBAReview(octokit, payload, APP_NAME);
+      await handleDBAReview(octokit, payload, APP_NAME, DBA_TEAM_NAME);
     } 
     catch(e)
     {
@@ -58,29 +57,6 @@ app.webhooks.onAny(async ({ octokit, payload }) => {
     return
   }
 })
-
-// app.webhooks.on(["pull_request.opened", "pull_request.synchronize"], async ({ octokit, payload }) => {
-//   const prURL = payload.pull_request.html_url;
-//   const prAuthor = payload.pull_request.user.login;
-//   const repo = payload.repository.name;
-
-//   console.log(`[Webhook - events {pull_request.opened,  pull_request.synchronize}]: repo [${repo}]; URL [${prURL}]; author [${prAuthor}]`)
-
-//   try {
-//     await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS);
-//   } catch(e){
-//     console.log(`Error on handling PR webhook [handleBadDatabaseVerbs]: ${e.message}`)
-//   }
-// });
-
-// app.webhooks.on("pull_request_review.submitted", async ({ octokit, payload }) => {
-//   console.log(`[Webhook - event {pull_request_review.submitted}]`)
-//   try {
-//     await handleDBAReview(octokit, payload, APP_NAME);
-//   } catch(e){
-//     console.log(`Error on handling PR webhook [handleDBAReview]: ${e.message}`)
-//   }
-// });
 
 addEventListener("fetch", (event) => {
   console.log(`[LOG] Inside event listener ${event.request.method} /`);
@@ -139,12 +115,12 @@ async function handleRequest(request) {
  * 
  * ##########################################################################################
 */
-async function handleDBAReview(octokit, payload, appName){
+async function handleDBAReview(octokit, payload, appName, dbaTeamName){
   const owner = payload.repository.owner.login;
   const repo = payload.repository.name;
   const pull_number = payload.pull_request.number;
 
-  const dbaMembers = await getDBATeamMembers(octokit, {owner, team_slug: "dba-team"})
+  const dbaMembers = await getDBATeamMembers(octokit, {owner, team_slug: dbaTeamName})
 
   console.info(`[handleDBAReview - Getting PR informations getDBATeamMembers]: ${JSON.stringify(dbaMembers)}`)
 
@@ -261,7 +237,7 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs){
 
       for (const review of openReviewsForFile){
         console.info(`[handleBadDatabaseVerbs - Inside loop for file ${file.name}]: since this file has a open review AND no bad verbs, beggining to dismiss of review number [${review.review_id}]`)
-        await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id, message: `Dismissing review for file ${review.file_path} due to resolved issue`});
+        await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id, message: `Review ${review.review_id} dismissed for file ${review.file_path} because no more query verbs are present`});
         console.info(`[handleBadDatabaseVerbs - Inside loop for file ${file.name}]: concluded dismissing review number [${review.review_id}]`)
       }
     }
