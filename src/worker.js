@@ -122,7 +122,7 @@ async function handleDBAReview(octokit, payload, appName){
     `[handleDBAReview - After PR informations]: botPullRequestReviews
     ${JSON.stringify(botPullRequestReviews)}`)
   
-    console.info(
+  console.info(
     `[handleDBAReview - After PR informations]: getPullRequestReviews
     ${JSON.stringify(pullRequestApprovals)}`)
 
