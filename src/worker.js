@@ -25,48 +25,39 @@ const app = new App({
  * ##########################################################################################
 */
 app.webhooks.on(WEBHOOK_EVENTS, async ({ octokit, payload }) => {
-  const commit_id = payload.pull_request.head.sha;
-  const owner = payload.repository.owner.login;
-  const repo = payload.repository.name;
-  const pull_number = payload.number;
-  const ref = payload.pull_request.head.ref;
 
-  console.log(`Tentando chamar reviewer`)
-  await requestTeamReviewers(octokit, {owner, repo, pull_number, team_reviewers: [DBA_TEAM_NAME]})
-  console.log(`Reviwer chamado`)
+  if (payload.action === 'submitted'){
+    console.log(`[Webhook - event {pull_request_review.submitted}]`)
+    try 
+    {
+      await handleDBAReview(octokit, payload, APP_NAME, DBA_TEAM_NAME);
+    } 
+    catch(e)
+    {
+      console.log(`Error on handling PR webhook [handleDBAReview]: ${e.message}`)
+    }
 
-  // if (payload.action === 'submitted'){
-  //   console.log(`[Webhook - event {pull_request_review.submitted}]`)
-  //   try 
-  //   {
-  //     await handleDBAReview(octokit, payload, APP_NAME, DBA_TEAM_NAME);
-  //   } 
-  //   catch(e)
-  //   {
-  //     console.log(`Error on handling PR webhook [handleDBAReview]: ${e.message}`)
-  //   }
+    return
+  }
 
-  //   return
-  // }
+  if (payload.action === 'opened' || payload.action === 'synchronize'){
+    const prURL = payload.pull_request.html_url;
+    const prAuthor = payload.pull_request.user.login;
+    const repo = payload.repository.name;
 
-  // if (payload.action === 'opened' || payload.action === 'synchronize'){
-  //   const prURL = payload.pull_request.html_url;
-  //   const prAuthor = payload.pull_request.user.login;
-  //   const repo = payload.repository.name;
+    console.log(`[Webhook - events {pull_request.opened,  pull_request.synchronize}]: repo [${repo}]; URL [${prURL}]; author [${prAuthor}]`)
 
-  //   console.log(`[Webhook - events {pull_request.opened,  pull_request.synchronize}]: repo [${repo}]; URL [${prURL}]; author [${prAuthor}]`)
+    try 
+    {
+      await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS);
+    } 
+    catch(e)
+    {
+      console.log(`Error on handling PR webhook [handleBadDatabaseVerbs]: ${e.message}`)
+    }
 
-  //   try 
-  //   {
-  //     await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS);
-  //   } 
-  //   catch(e)
-  //   {
-  //     console.log(`Error on handling PR webhook [handleBadDatabaseVerbs]: ${e.message}`)
-  //   }
-
-  //   return
-  // }
+    return
+  }
 })
 
 
@@ -234,6 +225,11 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs){
     // Checking with there is any naughty verb in PR changed files:
     if (badVerbs.some(verb => file.content.includes(verb)))
     {
+      // Requesting DBA Team reviwer
+      console.info(`[handleBadDatabaseVerbs - Requesting DBA Team Reviwers]`)
+      await requestTeamReviewers(octokit, {owner, repo, pull_number, team_reviewers: [DBA_TEAM_NAME]})
+      console.info(`[handleBadDatabaseVerbs - Reviwers requestes]`)
+
       // Checking if we already have a review in PR linked to the file name (also, if said review is marked as 'DISMISSED', return check):
       if (openReviewsForFile.length > 0){
         console.info(`[handleBadDatabaseVerbs - Inside loop for file ${file.name}]: Ignoring and returning from function because file [${file.name}] review is already set`)
