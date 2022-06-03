@@ -304,7 +304,7 @@ async function dismissReviewForPullRequest(octokit, {owner, repo, pull_number, r
 }
 
 async function getDBATeamMembers(octokit, {owner, team_slug}){
-  await octokit.request('GET /orgs/{org}/teams/{team_slug}/members', {
+  return await octokit.request('GET /orgs/{org}/teams/{team_slug}/members', {
     org: owner,
     team_slug
   })
