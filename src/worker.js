@@ -261,7 +261,7 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs){
 
       for (const review of openReviewsForFile){
         console.info(`[handleBadDatabaseVerbs - Inside loop for file ${file.name}]: since this file has a open review AND no bad verbs, beggining to dismiss of review number [${review.review_id}]`)
-        await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id, message: `Dismissing review for file ${file_path} due to resolved issue`});
+        await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id, message: `Dismissing review for file ${review.file_path} due to resolved issue`});
         console.info(`[handleBadDatabaseVerbs - Inside loop for file ${file.name}]: concluded dismissing review number [${review.review_id}]`)
       }
     }
