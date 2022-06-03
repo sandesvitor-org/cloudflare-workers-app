@@ -22,6 +22,11 @@ const app = new App({
  * 
  * ##########################################################################################
 */
+
+app.webhooks.onAny(async ({ octokit, payload }) => {
+  console.info(JSON.stringify(payload))
+})
+
 // app.webhooks.on(["pull_request.opened", "pull_request.synchronize"], async ({ octokit, payload }) => {
 //   const prURL = payload.pull_request.html_url;
 //   const prAuthor = payload.pull_request.user.login;
@@ -36,14 +41,14 @@ const app = new App({
 //   }
 // });
 
-app.webhooks.on("pull_request_review.submitted", async ({ octokit, payload }) => {
-  console.log(`[Webhook - event {pull_request_review.submitted}]`)
-  try {
-    await handleDBAReview(octokit, payload, APP_NAME);
-  } catch(e){
-    console.log(`Error on handling PR webhook [handleDBAReview]: ${e.message}`)
-  }
-});
+// app.webhooks.on("pull_request_review.submitted", async ({ octokit, payload }) => {
+//   console.log(`[Webhook - event {pull_request_review.submitted}]`)
+//   try {
+//     await handleDBAReview(octokit, payload, APP_NAME);
+//   } catch(e){
+//     console.log(`Error on handling PR webhook [handleDBAReview]: ${e.message}`)
+//   }
+// });
 
 addEventListener("fetch", (event) => {
   console.log(`[LOG] Inside event listener ${event.request.method} /`);
@@ -136,6 +141,7 @@ async function handleDBAReview(octokit, payload, appName){
     console.info(`[handleDBAReview - No reviews with status 'CHANGES_REQUESTED', returning`)
     return
   }
+
   // checking if DBA team approved PR (in this case return)
   if (pullRequestApprovals.length > 0){
     
