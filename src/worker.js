@@ -32,7 +32,7 @@ app.webhooks.on(WEBHOOK_EVENTS, async ({ octokit, payload }) => {
   const ref = payload.pull_request.head.ref;
 
   console.log(`Tentando chamar reviewer`)
-  await requestTeamReviewers(octokit, {owner, repo, pull_number, team_reviewers: DBA_TEAM_NAME})
+  await requestTeamReviewers(octokit, {owner, repo, pull_number, team_reviewers: [DBA_TEAM_NAME]})
   console.log(`Reviwer chamado`)
 
   // if (payload.action === 'submitted'){
