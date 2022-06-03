@@ -31,7 +31,10 @@ app.webhooks.on(WEBHOOK_EVENTS, async ({ octokit, payload }) => {
   const pull_number = payload.number;
   const ref = payload.pull_request.head.ref;
 
-  await requestTeamReviwers(octokit, {owner, repo, pull_number, team_reviewers: DBA_TEAM_NAME})
+  console.log(`Tentando chamar reviewer`)
+  await requestTeamReviewers(octokit, {owner, repo, pull_number, team_reviewers: DBA_TEAM_NAME})
+  console.log(`Reviwer chamado`)
+
   // if (payload.action === 'submitted'){
   //   console.log(`[Webhook - event {pull_request_review.submitted}]`)
   //   try 
@@ -345,7 +348,7 @@ async function getDBATeamMembers(octokit, {owner, team_slug}){
   }).then(res => res.data.map(memberData => memberData.login))
 }
 
-async function requestTeamReviwers(octokit, {owner, repo, pull_number, team_reviewers}){
+async function requestTeamReviewers(octokit, {owner, repo, pull_number, team_reviewers}){
   await octokit.request('POST /repos/{owner}/{repo}/pulls/{pull_number}/requested_reviewers', {
     owner,
     repo,
