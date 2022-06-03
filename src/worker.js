@@ -120,6 +120,10 @@ async function handleDBAReview(octokit, payload, appName){
     .filter(review => review.state === 'APPROVED' && review.user.login === 'sandesvitor')
 
   console.info(
+    `[handleDBAReview - After PR informations]: botPullRequestReviews
+    ${JSON.stringify(botPullRequestReviews)}`)
+  
+    console.info(
     `[handleDBAReview - After PR informations]: getPullRequestReviews
     ${JSON.stringify(pullRequestApprovals)}`)
 
@@ -148,8 +152,11 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs){
   
   console.info(`[handleBadDatabaseVerbs - Getting PR informations]: getPullRequestReviews and getChangedFilesContentForPullRequest`)
   
-  const botPullRequestReviews = await getPullRequestReviews(octokit, {owner, repo, pull_number}).then(res => res.data).filter(review => review.user.login === `${appName}[bot]`)
+  const botPullRequestReviews = await getPullRequestReviews(octokit, {owner, repo, pull_number})
+    .then(res => res.data
+      .filter(review => review.user.login === `${appName}[bot]`)
       .map(data => { return {review_id: data.id, file_path: data.body, state: data.state} })
+    )
   
   const pullRequestChagedFilesContentArray = await getChangedFilesContentForPullRequest(octokit, {owner, repo, pull_number, ref});
   
