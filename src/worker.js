@@ -107,40 +107,44 @@ async function handleDBAReview(octokit, payload, appName){
   const repo = payload.repository.name;
   const pull_number = payload.pull_request.number;
 
-  console.info(`[handleDBAReview - Getting PR informations]: getPullRequestReviews`)
-  const pullRequestReviews = await getPullRequestReviews(octokit, {owner, repo, pull_number}).then(res => res.data)
+  const dbaMembers = await getDBATeamMembers(octokit, {owner, team_slug: "dba-team"})
 
-  const botPullRequestReviews = pullRequestReviews
-    .filter(review => review.user.login === `${appName}[bot]`)
-    .map(data => { return {review_id: data.id, file_path: data.body, state: data.state} })
+  console.info(JSON.stringify(dbaMembers))
 
-  const pullRequestApprovals = pullRequestReviews
-    .filter(review => review.state === 'APPROVED' && review.user.login === 'sandesvitor')
-    .map(review => { return {review_author: review.user.login, review_id: review.id, state: review.state} })
+  // console.info(`[handleDBAReview - Getting PR informations]: getPullRequestReviews`)
+  // const pullRequestReviews = await getPullRequestReviews(octokit, {owner, repo, pull_number}).then(res => res.data)
 
-  console.info(
-    `[handleDBAReview - After PR informations]: botPullRequestReviews
-    ${JSON.stringify(botPullRequestReviews)}`)
+  // const botPullRequestReviews = pullRequestReviews
+  //   .filter(review => review.user.login === `${appName}[bot]`)
+  //   .map(data => { return {review_id: data.id, file_path: data.body, state: data.state} })
+
+  // const pullRequestApprovals = pullRequestReviews
+  //   .filter(review => review.state === 'APPROVED' && review.user.login === 'sandesvitor')
+  //   .map(review => { return {review_author: review.user.login, review_id: review.id, state: review.state} })
+
+  // console.info(
+  //   `[handleDBAReview - After PR informations]: botPullRequestReviews
+  //   ${JSON.stringify(botPullRequestReviews)}`)
   
-  console.info(
-    `[handleDBAReview - After PR informations]: getPullRequestReviews
-    ${JSON.stringify(pullRequestApprovals)}`)
+  // console.info(
+  //   `[handleDBAReview - After PR informations]: getPullRequestReviews
+  //   ${JSON.stringify(pullRequestApprovals)}`)
 
-  // checking if DBA team approved PR (in this case return)
-  if (pullRequestApprovals.length > 0){
-    const botOpenReviews = botPullRequestReviews.filter(review => review.state === 'CHANGES_REQUESTED');
+  // // checking if DBA team approved PR (in this case return)
+  // if (pullRequestApprovals.length > 0){
+  //   const botOpenReviews = botPullRequestReviews.filter(review => review.state === 'CHANGES_REQUESTED');
     
-    console.info(`[handleDBAReview - Dismissing reviews]: Pull Request approved by DBA team, dismissing reviews`)
+  //   console.info(`[handleDBAReview - Dismissing reviews]: Pull Request approved by DBA team, dismissing reviews`)
 
-    for (const review of botOpenReviews){
-      console.info(`[handleDBAReview - Dismissing reviews]: dismissing review number [${review.review_id}]`)
-      await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id, message: `Review ${review.review_id} dismissed due to DBA team PR approval`});
-      console.info(`[handleDBAReview - Dismissing reviews]: concluded dismissing review number [${review.review_id}]`)
-    }
+  //   for (const review of botOpenReviews){
+  //     console.info(`[handleDBAReview - Dismissing reviews]: dismissing review number [${review.review_id}]`)
+  //     await dismissReviewForPullRequest(octokit, {owner, repo, pull_number, review_id: review.review_id, message: `Review ${review.review_id} dismissed due to DBA team PR approval`});
+  //     console.info(`[handleDBAReview - Dismissing reviews]: concluded dismissing review number [${review.review_id}]`)
+  //   }
 
-    console.log("[handleDBAReview - Pull Request approved by DBA team, returning]")
-    return
-  }
+  //   console.log("[handleDBAReview - Pull Request approved by DBA team, returning]")
+  //   return
+  // }
 }
 
 async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs){
@@ -297,4 +301,12 @@ async function dismissReviewForPullRequest(octokit, {owner, repo, pull_number, r
     review_id,
     message
   })
+}
+
+async function getDBATeamMembers(octokit, {owner, team_slug}){
+  await octokit.request('GET /orgs/{org}/teams/{team_slug}/members', {
+    org: owner,
+    team_slug
+  })
+    .then(res => res.data.map(memberData => memberData.login))
 }
