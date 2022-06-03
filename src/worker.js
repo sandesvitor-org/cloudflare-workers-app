@@ -39,7 +39,7 @@ const app = new App({
 app.webhooks.on("pull_request_review.submitted", async ({ octokit, payload }) => {
   console.log(`[Webhook - event {pull_request_review.submitted}]`)
   try {
-    await handleDBAReview(octokit, payload);
+    await handleDBAReview(octokit, payload, APP_NAME);
   } catch(e){
     console.log(`Error on handling PR webhook [handleDBAReview]: ${e.message}`)
   }
@@ -102,12 +102,11 @@ async function handleRequest(request) {
  * 
  * ##########################################################################################
 */
-async function handleDBAReview(octokit, payload){
+async function handleDBAReview(octokit, payload, appName){
   const owner = payload.repository.owner.login;
   const repo = payload.repository.name;
   const pull_number = payload.pull_request.number;
 
-  console.debug(JSON.stringify(payload))
   console.info(`[handleDBAReview - Getting PR informations]: getPullRequestReviews`)
   const pullRequestReviews = await getPullRequestReviews(octokit, {owner, repo, pull_number}).then(res => res.data)
 
