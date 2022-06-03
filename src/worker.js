@@ -6,7 +6,6 @@ const privateKey = [PRIVATE_KEY_1, PRIVATE_KEY_2, PRIVATE_KEY_3].join("\n")
 
 const APP_NAME = "cloudflare-worker";
 const BAD_VERBS = ["DELETE", "DROP", "ALTER"];
-const PR_EVENTS = ["pull_request.opened", "pull_request.synchronize"];
 
 const app = new App({
   appId,
@@ -23,27 +22,22 @@ const app = new App({
  * 
  * ##########################################################################################
 */
-app.webhooks.on(PR_EVENTS, async ({ octokit, payload }) => {
-  const prURL = payload.pull_request.html_url;
-  const prAuthor = payload.pull_request.user.login;
-  const repo = payload.repository.name;
+// app.webhooks.on(["pull_request.opened", "pull_request.synchronize"], async ({ octokit, payload }) => {
+//   const prURL = payload.pull_request.html_url;
+//   const prAuthor = payload.pull_request.user.login;
+//   const repo = payload.repository.name;
 
-  console.log(`Webhook primary info: repo [${repo}]; URL [${prURL}]; author [${prAuthor}]`)
+//   console.log(`[Webhook pull_request.opened and pull_request.synchronize]: repo [${repo}]; URL [${prURL}]; author [${prAuthor}]`)
 
-  try {
-    await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS);
-  } catch(e){
-    console.log(`Error on handling PR webhook [handleBadDatabaseVerbs]: ${e.message}`)
-  }
-});
+//   try {
+//     await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS);
+//   } catch(e){
+//     console.log(`Error on handling PR webhook [handleBadDatabaseVerbs]: ${e.message}`)
+//   }
+// });
 
 app.webhooks.on("pull_request_review.submitted", async ({ octokit, payload }) => {
-  const prURL = payload.pull_request.html_url;
-  const prAuthor = payload.pull_request.user.login;
-  const repo = payload.repository.name;
-
-  console.log(`Webhook pull_request_review.submitted`)
-
+  console.log(`[Webhook pull_request_review.submitted]`)
   try {
     await handleDBAReview(octokit, payload);
   } catch(e){
@@ -145,12 +139,8 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs){
   
   console.info(`[Getting PR informations]: getPullRequestReviews and getChangedFilesContentForPullRequest`)
   
-  const pullRequestReviews = await getPullRequestReviews(octokit, {owner, repo, pull_number}).then(res => res.data)
-  
   const botPullRequestReviews = await getPullRequestReviews(octokit, {owner, repo, pull_number}).then(res => res.data).filter(review => review.user.login === `${appName}[bot]`)
       .map(data => { return {review_id: data.id, file_path: data.body, state: data.state} })
-
-  const pullRequestApprovals = pullRequestReviews.filter(review => review.state === 'APPROVED' && review.user.login === 'brunobrn')
   
   const pullRequestChagedFilesContentArray = await getChangedFilesContentForPullRequest(octokit, {owner, repo, pull_number, ref});
   
