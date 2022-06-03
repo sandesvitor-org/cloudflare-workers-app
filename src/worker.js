@@ -24,6 +24,7 @@ const app = new App({
  * ##########################################################################################
 */
 app.webhooks.onAny(async ({ octokit, payload }) => {
+  console.info(JSON.stringify(payload))
   if (payload.action === 'submitted' && payload.hasOwnProperty('review')){
     console.log(`[Webhook - event {pull_request_review.submitted}]`)
     try 
@@ -58,6 +59,14 @@ app.webhooks.onAny(async ({ octokit, payload }) => {
   }
 })
 
+
+/* 
+ * ##########################################################################################
+ * 
+ * CONFIGURE EVENT LISTENERS TO WEBHOOK URL
+ * 
+ * ##########################################################################################
+*/
 addEventListener("fetch", (event) => {
   console.log(`[LOG] Inside event listener ${event.request.method} /`);
   event.respondWith(handleRequest(event.request));
