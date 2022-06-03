@@ -110,14 +110,13 @@ async function handleDBAReview(octokit, payload, appName){
   console.info(`[handleDBAReview - Getting PR informations]: getPullRequestReviews`)
   const pullRequestReviews = await getPullRequestReviews(octokit, {owner, repo, pull_number}).then(res => res.data)
 
-  console.log("1")
   const botPullRequestReviews = pullRequestReviews
     .filter(review => review.user.login === `${appName}[bot]`)
     .map(data => { return {review_id: data.id, file_path: data.body, state: data.state} })
 
-  console.log("2")
   const pullRequestApprovals = pullRequestReviews
     .filter(review => review.state === 'APPROVED' && review.user.login === 'sandesvitor')
+    .map(review => { return {review_author: review.user.login, review_id: review.id, state: review.state} })
 
   console.info(
     `[handleDBAReview - After PR informations]: botPullRequestReviews
