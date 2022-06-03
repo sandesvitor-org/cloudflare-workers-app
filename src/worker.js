@@ -105,7 +105,7 @@ async function handleRequest(request) {
 async function handleDBAReview(octokit, payload){
   const owner = payload.repository.owner.login;
   const repo = payload.repository.name;
-  const pull_number = payload.number;
+  const pull_number = payload.pull_request.number;
 
   console.debug(JSON.stringify(payload))
   console.info(`[handleDBAReview - Getting PR informations]: getPullRequestReviews`)
