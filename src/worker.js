@@ -307,6 +307,5 @@ async function getDBATeamMembers(octokit, {owner, team_slug}){
   return await octokit.request('GET /orgs/{org}/teams/{team_slug}/members', {
     org: owner,
     team_slug
-  })
-    //.then(res => res.data.map(memberData => memberData.login))
+  }).then(res => res.data.map(memberData => memberData.login))
 }
