@@ -308,5 +308,5 @@ async function getDBATeamMembers(octokit, {owner, team_slug}){
     org: owner,
     team_slug
   })
-    .then(res => res.data.map(memberData => memberData.login))
+    //.then(res => res.data.map(memberData => memberData.login))
 }
