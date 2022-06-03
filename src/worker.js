@@ -130,9 +130,14 @@ async function handleDBAReview(octokit, payload, appName){
     `[handleDBAReview - After PR informations]: getPullRequestReviews
     ${JSON.stringify(pullRequestApprovals)}`)
 
+  const botOpenReviews = botPullRequestReviews.filter(review => review.state === 'CHANGES_REQUESTED');
+  
+  if (botOpenReviews.length === 0){
+    console.info(`[handleDBAReview - No reviews with status 'CHANGES_REQUESTED', returning`)
+    return
+  }
   // checking if DBA team approved PR (in this case return)
   if (pullRequestApprovals.length > 0){
-    const botOpenReviews = botPullRequestReviews.filter(review => review.state === 'CHANGES_REQUESTED');
     
     console.info(`[handleDBAReview - Dismissing reviews]: Pull Request approved by DBA team, dismissing reviews`)
 
