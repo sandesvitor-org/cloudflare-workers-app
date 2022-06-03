@@ -25,6 +25,33 @@ const app = new App({
 
 app.webhooks.onAny(async ({ octokit, payload }) => {
   console.info(JSON.stringify(payload))
+
+  if ((payload.action === 'opened' || payload.action === 'synchronize') && payload.hasOwnProperty('pull_request')){
+    console.log(`[Webhook - event {pull_request_review.submitted}]`)
+    try {
+      await handleDBAReview(octokit, payload, APP_NAME);
+    } catch(e){
+      console.log(`Error on handling PR webhook [handleDBAReview]: ${e.message}`)
+    }
+
+    return
+  }
+
+  if (payload.action === 'submitted' && payload.hasOwnProperty('review')){
+    const prURL = payload.pull_request.html_url;
+    const prAuthor = payload.pull_request.user.login;
+    const repo = payload.repository.name;
+
+    console.log(`[Webhook - events {pull_request.opened,  pull_request.synchronize}]: repo [${repo}]; URL [${prURL}]; author [${prAuthor}]`)
+
+    try {
+      await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS);
+    } catch(e){
+      console.log(`Error on handling PR webhook [handleBadDatabaseVerbs]: ${e.message}`)
+    }
+
+    return
+  }
 })
 
 // app.webhooks.on(["pull_request.opened", "pull_request.synchronize"], async ({ octokit, payload }) => {
