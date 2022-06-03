@@ -7,6 +7,7 @@ const privateKey = [PRIVATE_KEY_1, PRIVATE_KEY_2, PRIVATE_KEY_3].join("\n")
 const APP_NAME = "cloudflare-worker";
 const BAD_VERBS = ["DELETE", "DROP", "ALTER"];
 const DBA_TEAM_NAME = "dba-team";
+const WEBHOOK_EVENTS = ['pull_request.opened', 'pull_request.synchronize', 'pull_request_review.submitted'];
 
 const app = new App({
   appId,
@@ -23,45 +24,47 @@ const app = new App({
  * 
  * ##########################################################################################
 */
-app.webhooks.on(['pull_request.opened','pull_request.synchronize', 'pull_request_review.submitted'], async ({ octokit, payload }) => {
-  console.info(JSON.stringify(payload))
+app.webhooks.on(WEBHOOK_EVENTS, async ({ octokit, payload }) => {
+  const commit_id = payload.pull_request.head.sha;
+  const owner = payload.repository.owner.login;
+  const repo = payload.repository.name;
+  const pull_number = payload.number;
+  const ref = payload.pull_request.head.ref;
+
+  await requestTeamReviwers(octokit, {owner, repo, pull_number, team_reviewers: DBA_TEAM_NAME})
+  // if (payload.action === 'submitted'){
+  //   console.log(`[Webhook - event {pull_request_review.submitted}]`)
+  //   try 
+  //   {
+  //     await handleDBAReview(octokit, payload, APP_NAME, DBA_TEAM_NAME);
+  //   } 
+  //   catch(e)
+  //   {
+  //     console.log(`Error on handling PR webhook [handleDBAReview]: ${e.message}`)
+  //   }
+
+  //   return
+  // }
+
+  // if (payload.action === 'opened' || payload.action === 'synchronize'){
+  //   const prURL = payload.pull_request.html_url;
+  //   const prAuthor = payload.pull_request.user.login;
+  //   const repo = payload.repository.name;
+
+  //   console.log(`[Webhook - events {pull_request.opened,  pull_request.synchronize}]: repo [${repo}]; URL [${prURL}]; author [${prAuthor}]`)
+
+  //   try 
+  //   {
+  //     await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS);
+  //   } 
+  //   catch(e)
+  //   {
+  //     console.log(`Error on handling PR webhook [handleBadDatabaseVerbs]: ${e.message}`)
+  //   }
+
+  //   return
+  // }
 })
-
-// app.webhooks.onAny(async ({ octokit, payload }) => {
-//   console.info(JSON.stringify(payload))
-//   if (payload.action === 'submitted' && payload.hasOwnProperty('review')){
-//     console.log(`[Webhook - event {pull_request_review.submitted}]`)
-//     try 
-//     {
-//       await handleDBAReview(octokit, payload, APP_NAME, DBA_TEAM_NAME);
-//     } 
-//     catch(e)
-//     {
-//       console.log(`Error on handling PR webhook [handleDBAReview]: ${e.message}`)
-//     }
-
-//     return
-//   }
-
-//   if ((payload.action === 'opened' || payload.action === 'synchronize') && payload.hasOwnProperty('pull_request')){
-//     const prURL = payload.pull_request.html_url;
-//     const prAuthor = payload.pull_request.user.login;
-//     const repo = payload.repository.name;
-
-//     console.log(`[Webhook - events {pull_request.opened,  pull_request.synchronize}]: repo [${repo}]; URL [${prURL}]; author [${prAuthor}]`)
-
-//     try 
-//     {
-//       await handleBadDatabaseVerbs(octokit, payload, APP_NAME, BAD_VERBS);
-//     } 
-//     catch(e)
-//     {
-//       console.log(`Error on handling PR webhook [handleBadDatabaseVerbs]: ${e.message}`)
-//     }
-
-//     return
-//   }
-// })
 
 
 /* 
@@ -340,4 +343,13 @@ async function getDBATeamMembers(octokit, {owner, team_slug}){
     org: owner,
     team_slug
   }).then(res => res.data.map(memberData => memberData.login))
+}
+
+async function requestTeamReviwers(octokit, {owner, repo, pull_number, team_reviewers}){
+  await octokit.request('POST /repos/{owner}/{repo}/pulls/{pull_number}/requested_reviewers', {
+    owner,
+    repo,
+    pull_number,
+    team_reviewers
+  })
 }
