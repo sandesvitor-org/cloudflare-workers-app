@@ -232,9 +232,9 @@ async function handleBadDatabaseVerbs(octokit, payload, appName, badVerbs){
 
   // looping through files that have any diff compared to the main branch
   for (const file of pullRequestChagedFilesContentArray){
-    const openReviewsForFile = botPullRequestReviews.filter(review => review.file_path === file.name && review.state !== 'CHANGES_REQUESTED');
+    const openReviewsForFile = botPullRequestReviews.filter(review => review.file_path === file.name && review.state === 'CHANGES_REQUESTED');
     
-    console.info(`[handleBadDatabaseVerbs - Inside loop for file ${file.name}]: Open review: ${JSON.stringify(openReviewsForFile)}`)
+    console.info(`[handleBadDatabaseVerbs - Inside loop for file ${file.name}]: Open reviews: ${JSON.stringify(openReviewsForFile)}`)
 
     // Checking with there is any naughty verb in PR changed files:
     if (badVerbs.some(verb => file.content.includes(verb)))
