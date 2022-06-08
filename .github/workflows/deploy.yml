@@ -19,6 +19,10 @@ jobs:
         run: |
           sed -i 's/CF_ACCOUNT_ID/'"$CF_ACCOUNT_ID"'/' wrangler.toml
           
+      - name: Build
+        run: |
+          npm run build
+      
       - name: Publish Worker
         uses: cloudflare/wrangler-action@1.3.0
         with:
