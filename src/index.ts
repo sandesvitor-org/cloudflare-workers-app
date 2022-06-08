@@ -33,7 +33,7 @@ const app: App = new App({
  *
  * ##########################################################################################
  */
-app.webhooks.on(WEBHOOK_EVENTS, async ({ octokit, payload }) => {
+app.webhooks.on(WEBHOOK_EVENTS, async ({ octokit, payload }: any) => {
   if (payload.action === "submitted") {
     console.log(`[Webhook - event {pull_request_review.submitted}]`);
     try {
