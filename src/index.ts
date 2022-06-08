@@ -1,9 +1,5 @@
 import { App } from "@octokit/app";
-import {
-  handleRequest,
-  handleDBAReview,
-  handleBadDatabaseVerbs,
-} from "./handlers";
+import { handleRequest, handleDBAReview, handleBadDatabaseVerbs } from "./handlers";
 
 // @ts-ignore
 const appId = APP_ID;
@@ -28,6 +24,7 @@ const app: App = new App({
     secret,
   },
 });
+
 
 /*
  * ##########################################################################################
@@ -77,6 +74,7 @@ app.webhooks.on(WEBHOOK_EVENTS, async ({ octokit, payload }) => {
   }
 });
 
+
 /*
  * ##########################################################################################
  *
@@ -88,3 +86,5 @@ addEventListener("fetch", (event: any) => {
   console.log(`[LOG] Inside event listener ${event.request.method} /`);
   event.respondWith(handleRequest(event.request, app));
 });
+
+

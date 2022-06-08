@@ -1,14 +1,20 @@
 {
   "compilerOptions": {
-    "target": "ES6",
+    "outDir": "./dist",
     "module": "commonjs",
-    "outDir": "./lib",
-    "rootDir": "./src",
+    "target": "esnext",
+    "lib": ["esnext"],
+    "alwaysStrict": true,
     "strict": true,
-    "noImplicitAny": true,
-    "esModuleInterop": true
+    "preserveConstEnums": true,
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "types": [
+      "@cloudflare/workers-types",
+      "node"
+    ]
   },
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["src"],
+  "exclude": ["node_modules", "dist", "test"]
 }
