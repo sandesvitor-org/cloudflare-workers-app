@@ -35,11 +35,11 @@ const app: App = new App({
  */
 app.webhooks.on(WEBHOOK_EVENTS, async ({ octokit, payload }: any) => {
   if (payload.action === "submitted") {
-    console.log(`[Webhook - event {pull_request_review.submitted}]`);
+    app.log.info(`[Webhook - event {pull_request_review.submitted}]`);
     try {
       await handleDBAReview(octokit, payload, APP_NAME, DBA_TEAM_NAME);
     } catch (e: any) {
-      console.log(
+      app.log.error(
         `Error on handling PR webhook [handleDBAReview]: ${e.message}`
       );
     }
@@ -52,7 +52,7 @@ app.webhooks.on(WEBHOOK_EVENTS, async ({ octokit, payload }: any) => {
     const prAuthor = payload.pull_request.user.login;
     const repo = payload.repository.name;
 
-    console.log(
+    app.log.info(
       `[Webhook - events {pull_request.opened,  pull_request.synchronize}]: repo [${repo}]; URL [${prURL}]; author [${prAuthor}]`
     );
 
@@ -62,10 +62,11 @@ app.webhooks.on(WEBHOOK_EVENTS, async ({ octokit, payload }: any) => {
         payload,
         APP_NAME,
         BAD_VERBS,
-        DBA_TEAM_NAME
+        DBA_TEAM_NAME,
+        app
       );
     } catch (e: any) {
-      console.log(
+      app.log.error(
         `Error on handling PR webhook [handleBadDatabaseVerbs]: ${e.message}`
       );
     }
@@ -86,5 +87,3 @@ addEventListener("fetch", (event: any) => {
   console.log(`[LOG] Inside event listener ${event.request.method} /`);
   event.respondWith(handleRequest(event.request, app));
 });
-
-
