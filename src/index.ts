@@ -37,7 +37,7 @@ app.webhooks.on(WEBHOOK_EVENTS, async ({ octokit, payload }: any) => {
   if (payload.action === "submitted") {
     app.log.info(`[Webhook - event {pull_request_review.submitted}]`);
     try {
-      await handleDBAReview(octokit, payload, APP_NAME, DBA_TEAM_NAME);
+      await handleDBAReview(octokit, payload, APP_NAME, DBA_TEAM_NAME, app);
     } catch (e: any) {
       app.log.error(
         `Error on handling PR webhook [handleDBAReview]: ${e.message}`

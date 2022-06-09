@@ -45,7 +45,8 @@ export async function handleDBAReview(
   octokit: App["octokit"],
   payload: any,
   appName: string,
-  dbaTeamName: string
+  dbaTeamName: string,
+  app: App
 ) {
   const owner = payload.repository.owner.login;
   const repo = payload.repository.name;
