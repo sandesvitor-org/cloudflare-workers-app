@@ -46,7 +46,6 @@ export async function handleDBAReview(
   payload: any,
   appName: string,
   dbaTeamName: string,
-  app: App
 ) {
   const owner = payload.repository.owner.login;
   const repo = payload.repository.name;
@@ -57,13 +56,13 @@ export async function handleDBAReview(
     team_slug: dbaTeamName,
   });
 
-  app.log.info(
+  console.info(
     `[handleDBAReview - Getting PR informations getDBATeamMembers]: ${JSON.stringify(
       dbaMembers
     )}`
   );
 
-  app.log.info(
+  console.info(
     `[handleDBAReview - Getting PR informations]: getPullRequestReviews`
   );
   const pullRequestReviews = await GithubFunction.getPullRequestReviews(
@@ -91,12 +90,12 @@ export async function handleDBAReview(
       };
     });
 
-  app.log.info(
+  console.info(
     `[handleDBAReview - After PR informations]: botPullRequestReviews
     ${JSON.stringify(botPullRequestReviews)}`
   );
 
-  app.log.info(
+  console.info(
     `[handleDBAReview - After PR informations]: getPullRequestReviews
     ${JSON.stringify(pullRequestApprovals)}`
   );
@@ -106,7 +105,7 @@ export async function handleDBAReview(
   );
 
   if (botOpenReviews.length === 0) {
-    app.log.info(
+    console.info(
       `[handleDBAReview - No reviews with status 'CHANGES_REQUESTED', returning`
     );
     return;
@@ -114,12 +113,12 @@ export async function handleDBAReview(
 
   // checking if DBA team approved PR (in this case return)
   if (pullRequestApprovals.length > 0) {
-    app.log.info(
+    console.info(
       `[handleDBAReview - Dismissing reviews]: Pull Request approved by DBA team, dismissing reviews`
     );
 
     for (const review of botOpenReviews) {
-      app.log.info(
+      console.info(
         `[handleDBAReview - Dismissing reviews]: dismissing review number [${review.review_id}]`
       );
       await GithubFunction.dismissReviewForPullRequest(octokit, {
@@ -129,7 +128,7 @@ export async function handleDBAReview(
         review_id: review.review_id,
         message: `Review ${review.review_id} dismissed due to DBA team PR approval`,
       });
-      app.log.info(
+      console.info(
         `[handleDBAReview - Dismissing reviews]: concluded dismissing review number [${review.review_id}]`
       );
     }
@@ -147,7 +146,6 @@ export async function handleBadDatabaseVerbs(
   appName: string,
   badVerbs: string[],
   dbaTeamName: string,
-  app: App
 ) {
   const commit_id = payload.pull_request.head.sha;
   const owner = payload.repository.owner.login;
@@ -155,7 +153,7 @@ export async function handleBadDatabaseVerbs(
   const pull_number = payload.number;
   const ref = payload.pull_request.head.ref;
 
-  app.log.info(
+  console.info(
     `[handleBadDatabaseVerbs - Getting PR informations]: getPullRequestReviews and getChangedFilesContentForPullRequest`
   );
 
@@ -178,12 +176,12 @@ export async function handleBadDatabaseVerbs(
       ref,
     });
 
-  app.log.info(
+  console.info(
     `[handleBadDatabaseVerbs - After PR informations]: getPullRequestReviews
     ${JSON.stringify(botPullRequestReviews)}`
   );
 
-  app.log.info(
+  console.info(
     `[handleBadDatabaseVerbs - After PR informations]: getChangedFilesContentForPullRequest
     ${JSON.stringify(pullRequestChagedFilesContentArray)}`
   );
@@ -200,7 +198,7 @@ export async function handleBadDatabaseVerbs(
     );
 
     if (lingeringReviewArray.length === 0) {
-      app.log.info(
+      console.info(
         `[handleBadDatabaseVerbs - Inside loop for review ${review.review_id} of file ${review.file_path}]: since this file has a open review, beggining to dismiss it`
       );
       await GithubFunction.dismissReviewForPullRequest(octokit, {
@@ -210,7 +208,7 @@ export async function handleBadDatabaseVerbs(
         review_id: review.review_id,
         file_path: review.file_path,
       });
-      app.log.info(
+      console.info(
         `[handleBadDatabaseVerbs - Inside loop for review ${review.review_id} of file ${review.file_path}]: concluded dismissing review`
       );
     }
@@ -223,7 +221,7 @@ export async function handleBadDatabaseVerbs(
         review.file_path === file.name && review.state === "CHANGES_REQUESTED"
     );
 
-    app.log.info(
+    console.info(
       `[handleBadDatabaseVerbs - Inside loop for file ${
         file.name
       }]: Open reviews: ${JSON.stringify(openReviewsForFile)}`
@@ -232,25 +230,25 @@ export async function handleBadDatabaseVerbs(
     // Checking with there is any naughty verb in PR changed files:
     if (badVerbs.some((verb: any) => file.content.includes(verb))) {
       // Requesting DBA Team reviwer
-      app.log.info(`[handleBadDatabaseVerbs - Requesting DBA Team Reviwers]`);
+      console.info(`[handleBadDatabaseVerbs - Requesting DBA Team Reviwers]`);
       await GithubFunction.requestTeamReviewers(octokit, {
         owner,
         repo,
         pull_number,
         team_reviewers: [dbaTeamName],
       });
-      app.log.info(`[handleBadDatabaseVerbs - Reviwers requestes]`);
+      console.info(`[handleBadDatabaseVerbs - Reviwers requestes]`);
 
       // Checking if we already have a review in PR linked to the file name (also, if said review is marked as 'DISMISSED', return check):
       if (openReviewsForFile.length > 0) {
-        app.log.info(
+        console.info(
           `[handleBadDatabaseVerbs - Inside loop for file ${file.name}]: Ignoring and returning from function because file [${file.name}] review is already set`
         );
         continue;
       }
 
       // If there is no review AND the file has some BAD VERBS, create a review:
-      app.log.info(
+      console.info(
         `[handleBadDatabaseVerbs - Inside loop for file ${file.name}]: Creating a review for file [${file.name}] due to forbidden verbs: [${badVerbs}]`
       );
       await GithubFunction.postReviewCommentInPullRequest(octokit, {
@@ -260,23 +258,23 @@ export async function handleBadDatabaseVerbs(
         commit_id,
         path: file.name,
       });
-      app.log.info(
+      console.info(
         `[handleBadDatabaseVerbs - Inside loop for file ${file.name}]: Review created for file [${file.name}]`
       );
     } else {
-      app.log.info(
+      console.info(
         `[handleBadDatabaseVerbs - Inside loop for file ${file.name}]: this file DOES NOT have bad verbs`
       );
 
       if (openReviewsForFile.length === 0) {
-        app.log.info(
+        console.info(
           `[Inside loop for file ${file.name}]: Ignoring and returning from function because file [${file.name}] has no bad verbs and no pending review`
         );
         continue;
       }
 
       for (const review of openReviewsForFile) {
-        app.log.info(
+        console.info(
           `[handleBadDatabaseVerbs - Inside loop for file ${file.name}]: since this file has a open review AND no bad verbs, beggining to dismiss of review number [${review.review_id}]`
         );
         await GithubFunction.dismissReviewForPullRequest(octokit, {
@@ -286,12 +284,12 @@ export async function handleBadDatabaseVerbs(
           review_id: review.review_id,
           message: `Review ${review.review_id} dismissed for file ${review.file_path} because no more query verbs are present`,
         });
-        app.log.info(
+        console.info(
           `[handleBadDatabaseVerbs - Inside loop for file ${file.name}]: concluded dismissing review number [${review.review_id}]`
         );
       }
     }
   }
 
-  app.log.info("[handleBadDatabaseVerbs - End of PR bad verbs handler]");
+  console.info("[handleBadDatabaseVerbs - End of PR bad verbs handler]");
 }
