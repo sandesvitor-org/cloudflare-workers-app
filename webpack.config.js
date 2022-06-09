@@ -1,4 +1,5 @@
 const path = require('path')
+const webpack = require('webpack');
 
 module.exports = {
   entry: './src/index.ts',
@@ -16,5 +17,12 @@ module.exports = {
       // all files with a `.ts` or `.tsx` extension will be handled by `ts-loader`
       { test: /\.tsx?$/, loader: "ts-loader" }
     ]
-  }
+  },
+  plugins: [
+    // Work around for Buffer is undefined:
+    // https://github.com/webpack/changelog-v5/issues/10
+    new webpack.ProvidePlugin({
+        Buffer: ['buffer', 'Buffer'],
+    }),
+  ]
 }
