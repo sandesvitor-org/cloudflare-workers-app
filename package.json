@@ -5,8 +5,21 @@
   "description": "A Cloudflare Worker app",
   "author": "sandesvitor@gmail.com",
   "repository": "github:sandesvitor-org/cloudflare-workers-app",
-  "main": "src/worker.js",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "webpack",
+    "format": "prettier --write **/*.ts"
+  },
   "dependencies": {
     "@octokit/app": "^12.0.5"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^3.0.0",
+    "@types/node": "^17.0.41",
+    "prettier": "2.6.1",
+    "ts-loader": "^9.2.2",
+    "typescript": "4.6.3",
+    "webpack": "^5.38.1",
+    "webpack-cli": "^4.7.0"
   }
 }
