@@ -36,14 +36,17 @@ const app: App = new App({
 app.webhooks.on(WEBHOOK_EVENTS, async ({ octokit, payload }: any) => {
   if (payload.action === "submitted") {
     console.info(`[Webhook - event {pull_request_review.submitted}]`);
-    try {
+    try 
+    {
       await handleDBAReview(
         octokit, 
         payload, 
         APP_NAME, 
         DBA_TEAM_NAME
       );
-    } catch (e: any) {
+    } 
+    catch (e: any) 
+    {
       console.error(
         `Error on handling PR webhook [handleDBAReview]: ${e.message}`
       );
@@ -61,7 +64,8 @@ app.webhooks.on(WEBHOOK_EVENTS, async ({ octokit, payload }: any) => {
       `[Webhook - events {pull_request.opened,  pull_request.synchronize}]: repo [${repo}]; URL [${prURL}]; author [${prAuthor}]`
     );
 
-    try {
+    try 
+    {
       await handleBadDatabaseVerbs(
         octokit,
         payload,
@@ -69,7 +73,8 @@ app.webhooks.on(WEBHOOK_EVENTS, async ({ octokit, payload }: any) => {
         BAD_VERBS,
         DBA_TEAM_NAME,
       );
-    } catch (e: any) {
+    } 
+    catch (e: any) {
       console.error(
         `Error on handling PR webhook [handleBadDatabaseVerbs]: ${e.message}`
       );

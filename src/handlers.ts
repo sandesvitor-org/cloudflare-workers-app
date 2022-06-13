@@ -3,14 +3,9 @@ import { App } from "@octokit/app";
 
 export async function handleRequest(request: any, app: App) {
   if (request.method === "GET") {
-    const { data } = await app.octokit.request("GET /app");
-
-    return new Response(
-      `<h1>Cloudflare Worker do Sandes</h1>
-<p>Installation count: ${data.installations_count}</p>
-<p><a href="https://github.com/apps/cloudflare-worker">Install</a> | <a href="https://github.com/sandesvitor-org/cloudflare-workers-app/#readme">source code</a></p>`,
-      {
-        headers: { "content-type": "text/html" },
+    return new Response(`{ "ok": true }`, {
+        status: 200,
+        headers: { "content-type": "application/json" }
       }
     );
   }
